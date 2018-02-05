@@ -10,18 +10,18 @@ extern crate num_iter;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
+extern crate softcomputingforsoftpeople;
 
 
 use structopt::StructOpt;
-use rand::{Rng, XorShiftRng, SeedableRng, thread_rng};
+use rand::Rng;
 use rand::seq::sample_slice;
 use ordered_float::NotNaN;
 use arrayvec::ArrayVec;
 use bitwise::word::*;
 use num_iter::range_step;
-use std::num::ParseIntError;
-use std::str::{from_utf8, Utf8Error};
 use std::fmt;
+use softcomputingforsoftpeople::{parse_seed, get_rng, gen_rand_pop, Individual, Fitness, OnlyFitnessStats};
 
 const POP_SIZE: usize = 10;
 const POOL_SIZE: usize = 10;
@@ -52,19 +52,11 @@ impl fmt::Display for Gene {
     }
 }
 
-#[derive(Copy, Clone)]
-struct Individual {
-    gene: Gene,
-    fitness: f32,
-}
-
-fn rng_with_seed() -> (XorShiftRng, [u32; 4]) {
-    let mut seed: [u32; 4] = thread_rng().gen();
-    while seed == [0, 0, 0, 0] {
-        seed = thread_rng().gen();
-    }
-    (XorShiftRng::from_seed(seed), seed)
-}
+//#[derive(Copy, Clone)]
+//struct Individual {
+    //gene: Gene,
+    //fitness: f32,
+//}
 
 fn fixed_to_float(x: u8) -> f32 {
     // This is slightly different from the task.
@@ -76,10 +68,14 @@ fn interpret_gene(gene: Gene) -> (f32, f32) {
     (fixed_to_float(gene.x1), fixed_to_float(gene.x2))
 }
 
-fn f_fitness(gene: Gene) -> f32 {
-    let (x1f, x2f) = interpret_gene(gene);
-    -(x1f + x2f - 2.0 * x1f * x1f - x2f * x2f + x1f * x2f)
+impl softcomputingforsoftpeople::Fitness for Gene {
+    fn fitness(&self) -> f32 {
+        let (x1f, x2f) = interpret_gene(*self);
+        -(x1f + x2f - 2.0 * x1f * x1f - x2f * x2f + x1f * x2f)
+    }
 }
+
+impl softcomputingforsoftpeople::State for Gene {}
 
 fn gene_bits(gene: Gene) -> u16 {
     unsafe { std::mem::transmute::<Gene, u16>(gene) }
@@ -116,62 +112,9 @@ fn mutate_inplace<R: Rng>(rng: &mut R, parent: &mut Gene) {
     }
 }
 
-fn print_individuals(individuals: &[Individual]) {
+fn print_individuals(individuals: &[Individual<Gene, OnlyFitnessStats>]) {
     for (idx, ind) in individuals.iter().enumerate() {
-        println!("#{} {} fitness: {}", idx, ind.gene, ind.fitness);
-    }
-}
-
-#[derive(Debug)]
-enum ParseSeedError {
-    IncorrectLength,
-    HexParseError(ParseIntError),
-    UnexpectedCharError(Utf8Error),
-}
-
-impl From<ParseIntError> for ParseSeedError {
-    fn from(err: ParseIntError) -> Self {
-        ParseSeedError::HexParseError(err)
-    }
-}
-
-impl From<Utf8Error> for ParseSeedError {
-    fn from(err: Utf8Error) -> Self {
-        ParseSeedError::UnexpectedCharError(err)
-    }
-}
-
-impl ToString for ParseSeedError {
-    fn to_string(&self) -> String {
-        match *self {
-            ParseSeedError::IncorrectLength => {
-                "Incorrect length of seed. Excepted 128 bits, which is 32 nibbles/characters."
-                    .to_owned()
-            }
-            ParseSeedError::HexParseError(ref err) => {
-                format!("Error parsing hexademical string {}", err.to_string()).to_owned()
-            }
-            ParseSeedError::UnexpectedCharError(ref err) => {
-                format!("Unexpected wide character in hexademical string caused encoding error {}",
-                        err.to_string())
-                        .to_owned()
-            }
-        }
-    }
-}
-
-fn parse_seed(src: &str) -> Result<[u32; 4], ParseSeedError> {
-    let mut bits = src.as_bytes().chunks(8);
-    if bits.len() != 4 {
-        Err(ParseSeedError::IncorrectLength)
-    } else {
-        fn take_u32<'a, I: Iterator<Item = &'a [u8]>>(bits: &mut I) -> Result<u32, ParseSeedError> {
-            Ok(u32::from_str_radix(from_utf8(bits.next().unwrap())?, 16)?)
-        }
-        Ok([take_u32(&mut bits)?,
-            take_u32(&mut bits)?,
-            take_u32(&mut bits)?,
-            take_u32(&mut bits)?])
+        println!("#{} {} fitness: {}", idx, ind.state, ind.stats.fitness);
     }
 }
 
@@ -179,7 +122,7 @@ fn parse_seed(src: &str) -> Result<[u32; 4], ParseSeedError> {
 #[structopt(name = "binary-coded-ga")]
 struct Opt {
     /// A flag, true if used in the command line.
-    #[structopt(short = "v", long = "verbosity", help = "Verbosity")]
+    #[structopt(short = "v", long = "verbosity", help = "Verbosity", parse(from_occurrences))]
     verbosity: u64,
 
     /// An argument of type float, with a default value.
@@ -190,26 +133,9 @@ struct Opt {
 
 fn main() {
     let opt = Opt::from_args();
-    let mut rng: XorShiftRng;
-    if let Some(seed) = opt.seed {
-        rng = rand::XorShiftRng::from_seed(seed);
-    } else {
-        let (new_rng, seed) = rng_with_seed();
-        rng = new_rng;
-        println!("This run can be replicated with -s {:08x}{:08x}{:08x}{:08x}",
-                 seed[0],
-                 seed[1],
-                 seed[2],
-                 seed[3]);
-    }
+    let mut rng = get_rng(opt.seed);
     // Generate random population
-    let mut population: ArrayVec<[Individual; POP_SIZE]> = (0..POP_SIZE)
-        .map(|_| {
-                 let gene: Gene = rng.gen();
-                 let fitness = f_fitness(gene);
-                 Individual { gene, fitness }
-             })
-        .collect();
+    let mut population = gen_rand_pop(&mut rng, POP_SIZE);
     let mut breeding_pool = ArrayVec::<[Gene; POOL_SIZE]>::new();
     // Iterate
     for gen in 0..50 {
@@ -221,26 +147,26 @@ fn main() {
         breeding_pool.clear();
         for i in 0..POOL_SIZE {
             let mut competitors = sample_slice(&mut rng, &population, 2);
-            competitors.sort_unstable_by_key(|ind| NotNaN::new(-ind.fitness).unwrap());
+            competitors.sort_unstable_by_key(|ind| NotNaN::new(-ind.stats.fitness).unwrap());
             if opt.verbosity >= 2 {
                 println!("#{} Tournament between {} and {}",
                          i,
-                         competitors[0].gene,
-                         competitors[1].gene);
+                         competitors[0].state,
+                         competitors[1].state);
             }
             let win_chance: f32 = rng.gen();
             breeding_pool.push(if win_chance < P_S {
                                    if opt.verbosity >= 2 {
                                        println!("{} wins due to higher fitness",
-                                                competitors[0].gene);
+                                                competitors[0].state);
                                    }
-                                   competitors[0].gene
+                                   competitors[0].state
                                } else {
                                    if opt.verbosity >= 2 {
                                        println!("{} wins despite lower fitness",
-                                                competitors[1].gene);
+                                                competitors[1].state);
                                    }
-                                   competitors[1].gene
+                                   competitors[1].state
                                });
         }
         // Crossover
@@ -250,8 +176,8 @@ fn main() {
                 let crossover_point = rng.gen_range(1, 16);
                 let (son, daughter) =
                     crossover(breeding_pool[i], breeding_pool[i + 1], crossover_point);
-                population[i].gene = son;
-                population[i + 1].gene = daughter;
+                population[i].state = son;
+                population[i + 1].state = daughter;
                 if opt.verbosity >= 2 {
                     println!("#{}: {} and #{}: {} crossover at {} to produce {} and {}",
                              i,
@@ -263,8 +189,8 @@ fn main() {
                              daughter);
                 }
             } else {
-                population[i].gene = breeding_pool[i];
-                population[i + 1].gene = breeding_pool[i + 1];
+                population[i].state = breeding_pool[i];
+                population[i + 1].state = breeding_pool[i + 1];
                 if opt.verbosity >= 2 {
                     println!("#{}: {} and #{}: {} survive until the next generation",
                              i,
@@ -279,20 +205,20 @@ fn main() {
             let mutation_chance: f32 = rng.gen();
             if mutation_chance < P_M {
                 if opt.verbosity >= 2 {
-                    println!("Mutating #{} {}", i, individual.gene);
+                    println!("Mutating #{} {}", i, individual.state);
                 }
-                mutate_inplace(&mut rng, &mut individual.gene);
+                mutate_inplace(&mut rng, &mut individual.state);
                 if opt.verbosity >= 2 {
-                    println!("into {}", individual.gene);
+                    println!("into {}", individual.state);
                 }
             }
         }
         // Evaluate fitness
         for ind in population.iter_mut() {
-            ind.fitness = f_fitness(ind.gene);
+            ind.stats.fitness = ind.state.fitness();
         }
     }
     println!("Final results");
-    population.sort_unstable_by_key(|ind| NotNaN::new(ind.fitness).unwrap());
+    population.sort_unstable_by_key(|ind| NotNaN::new(ind.stats.fitness).unwrap());
     print_individuals(population.as_slice());
 }
