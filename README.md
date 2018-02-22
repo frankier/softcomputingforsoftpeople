@@ -226,3 +226,169 @@ constriction or vmax.
 See:
 
 M. Clerc and J. Kennedy, "The particle swarm - explosion, stability, and convergence in a multidimensional complex space," in IEEE Transactions on Evolutionary Computation, vol. 6, no. 1, pp. 58-73, Feb 2002. doi: 10.1109/4235.985692 URL: http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=985692&isnumber=21241
+
+Task 3
+======
+
+Q: Compare the penalty functions.
+
+With linear crossover, the following is produce for dynamic penalty
+
+    $ cargo run --bin task3 -- -s 41cc89fe9eb4edfc4c947510b3dd20ff -g 50 -t dynamic
+
+    Final results
+    #0 Gene(Matrix { data: [-4.5113077, 0.5429516] }) fitness: -104844.75 inf: 1
+    #1 Gene(Matrix { data: [-4.1173477, 2.46162] }) fitness: -72226.42 inf: 1
+    #2 Gene(Matrix { data: [-4.387608, 4.056757] }) fitness: -55313.887 inf: 1
+    #3 Gene(Matrix { data: [-3.6257484, 3.5468183] }) fitness: -53883.625 inf: 1
+    #4 Gene(Matrix { data: [-4.3135457, 4.2824078] }) fitness: -52052.03 inf: 1
+    #5 Gene(Matrix { data: [-4.16936, 4.250629] }) fitness: -51068.87 inf: 1
+    #6 Gene(Matrix { data: [-3.7368035, 4.1552916] }) fitness: -48175.582 inf: 1
+    #7 Gene(Matrix { data: [-3.773822, 4.358116] }) fitness: -46343.91 inf: 1
+    #8 Gene(Matrix { data: [-4.1295214, 4.9398217] }) fitness: -43383.61 inf: 1
+    #9 Gene(Matrix { data: [-4.091359, 4.95936] }) fitness: -42861.277 inf: 1
+    #10 Gene(Matrix { data: [-2.6100378, 3.8425143] }) fitness: -41677.09 inf: 1
+    #11 Gene(Matrix { data: [-4.6750913, 6.511933] }) fitness: -32729.322 inf: 1
+    #12 Gene(Matrix { data: [3.753212, 2.8890576] }) fitness: -9530.451 inf: 1
+    #13 Gene(Matrix { data: [-2.7861433, 10.385808] }) fitness: -2257.343 inf: 1
+    #14 Gene(Matrix { data: [1.5113522, 8.277955] }) fitness: -138.23344 inf: 1
+    #15 Gene(Matrix { data: [9.913637, 12.261999] }) fitness: -22.175636 inf: 0
+    #16 Gene(Matrix { data: [9.083775, 7.665818] }) fitness: -16.749592 inf: 0
+    #17 Gene(Matrix { data: [3.0505474, 13.292371] }) fitness: -16.342918 inf: 0
+    #18 Gene(Matrix { data: [8.538727, 7.156195] }) fitness: -15.6949215 inf: 0
+    #19 Gene(Matrix { data: [-4.63857, 14.077328] }) fitness: -9.438758 inf: 0
+
+With linear crossover, the following is produce for static penalty:
+
+    $ cargo run --bin task3 -- -s 41cc89fe9eb4edfc4c947510b3dd20ff -g 50 -t static
+
+    #0 Gene(Matrix { data: [-4.1173477, 2.46162] }) fitness: -500000000.0 inf: 1
+    #1 Gene(Matrix { data: [-4.6750913, 6.511933] }) fitness: -500000000.0 inf: 1
+    #2 Gene(Matrix { data: [-3.7368035, 4.1552916] }) fitness: -500000000.0 inf: 1
+    #3 Gene(Matrix { data: [-4.16936, 4.250629] }) fitness: -500000000.0 inf: 1
+    #4 Gene(Matrix { data: [-4.1295214, 4.9398217] }) fitness: -500000000.0 inf: 1
+    #5 Gene(Matrix { data: [3.753212, 2.8890576] }) fitness: -500000000.0 inf: 1
+    #6 Gene(Matrix { data: [1.5113522, 8.277955] }) fitness: -500000000.0 inf: 1
+    #7 Gene(Matrix { data: [-3.6257484, 3.5468183] }) fitness: -500000000.0 inf: 1
+    #8 Gene(Matrix { data: [-3.773822, 4.358116] }) fitness: -500000000.0 inf: 1
+    #9 Gene(Matrix { data: [-2.6100378, 3.8425143] }) fitness: -500000000.0 inf: 1
+    #10 Gene(Matrix { data: [-2.7861433, 10.385808] }) fitness: -500000000.0 inf: 1
+    #11 Gene(Matrix { data: [-4.387608, 4.056757] }) fitness: -500000000.0 inf: 1
+    #12 Gene(Matrix { data: [-4.091359, 4.95936] }) fitness: -500000000.0 inf: 1
+    #13 Gene(Matrix { data: [-4.3135457, 4.2824078] }) fitness: -500000000.0 inf: 1
+    #14 Gene(Matrix { data: [-4.5113077, 0.5429516] }) fitness: -500000000.0 inf: 1
+    #15 Gene(Matrix { data: [9.913637, 12.261999] }) fitness: -22.175636 inf: 0
+    #16 Gene(Matrix { data: [9.083775, 7.665818] }) fitness: -16.749592 inf: 0
+    #17 Gene(Matrix { data: [3.0505474, 13.292371] }) fitness: -16.342918 inf: 0
+    #18 Gene(Matrix { data: [8.538727, 7.156195] }) fitness: -15.6949215 inf: 0
+    #19 Gene(Matrix { data: [-4.63857, 14.077328] }) fitness: -9.438758 inf: 0
+
+Notice in this case there is very little difference given the same seed.
+
+With linear crossover, death penalty will not run since linear crossover
+deterministically selects children, meaning it can keep on selecting infeasible
+children over and over again causing an infinite loop if we implement death
+penalty as directed in the review paper.
+
+Now for undx: static, dynamic and death penalty:
+
+    $ cargo run --bin task3 -- -s 41cc89fe9eb4edfc4c947510b3dd20ff -g 50 -t static --xover-op udnx
+
+    Final results
+    #0 Gene(Matrix { data: [-4.6687684, 2.322264] }) fitness: -500000000.0 inf: 1
+    #1 Gene(Matrix { data: [-4.6687684, 2.322264] }) fitness: -500000000.0 inf: 1
+    #2 Gene(Matrix { data: [6.5202227, 4.4029083] }) fitness: -500000000.0 inf: 1
+    #3 Gene(Matrix { data: [-1.0948486, 6.8312607] }) fitness: -500000000.0 inf: 1
+    #4 Gene(Matrix { data: [-2.9383564, 7.695717] }) fitness: -500000000.0 inf: 1
+    #5 Gene(Matrix { data: [1.9136571, 2.4843783] }) fitness: -500000000.0 inf: 1
+    #6 Gene(Matrix { data: [-4.1279263, 9.323532] }) fitness: -500000000.0 inf: 1
+    #7 Gene(Matrix { data: [-3.446044, 3.3098066] }) fitness: -500000000.0 inf: 1
+    #8 Gene(Matrix { data: [-3.9594402, 8.726284] }) fitness: -500000000.0 inf: 1
+    #9 Gene(Matrix { data: [-3.9594402, 8.726284] }) fitness: -500000000.0 inf: 1
+    #10 Gene(Matrix { data: [-1.8924379, 5.030302] }) fitness: -500000000.0 inf: 1
+    #11 Gene(Matrix { data: [-2.654885, 6.567602] }) fitness: -500000000.0 inf: 1
+    #12 Gene(Matrix { data: [9.2236595, 11.870246] }) fitness: -21.093906 inf: 0
+    #13 Gene(Matrix { data: [9.196007, 9.697033] }) fitness: -18.89304 inf: 0
+    #14 Gene(Matrix { data: [7.516514, 9.116718] }) fitness: -16.633232 inf: 0
+    #15 Gene(Matrix { data: [4.467144, 11.223061] }) fitness: -15.690205 inf: 0
+    #16 Gene(Matrix { data: [7.472748, 6.8858657] }) fitness: -14.358614 inf: 0
+    #17 Gene(Matrix { data: [1.2455215, 11.539139] }) fitness: -12.78466 inf: 0
+    #18 Gene(Matrix { data: [-2.3451548, 13.873457] }) fitness: -11.528302 inf: 0
+    #19 Gene(Matrix { data: [1.4033165, 9.98048] }) fitness: -11.383797 inf: 0
+    Fitness evals 2394
+    g1 evals 2440
+
+    $ cargo run --bin task3 -- -s 41cc89fe9eb4edfc4c947510b3dd20ff -g 50 -t dynamic --xover-op udnx
+
+    Final results
+    #0 Gene(Matrix { data: [-4.6687684, 2.322264] }) fitness: -80327.5 inf: 1
+    #1 Gene(Matrix { data: [-4.6687684, 2.322264] }) fitness: -80327.5 inf: 1
+    #2 Gene(Matrix { data: [-3.446044, 3.3098066] }) fitness: -54880.637 inf: 1
+    #3 Gene(Matrix { data: [-1.8924379, 5.030302] }) fitness: -25729.65 inf: 1
+    #4 Gene(Matrix { data: [1.9136571, 2.4843783] }) fitness: -21047.441 inf: 1
+    #5 Gene(Matrix { data: [-2.654885, 6.567602] }) fitness: -19130.152 inf: 1
+    #6 Gene(Matrix { data: [-2.9383564, 7.695717] }) fitness: -13564.512 inf: 1
+    #7 Gene(Matrix { data: [-3.9594402, 8.726284] }) fitness: -12558.759 inf: 1
+    #8 Gene(Matrix { data: [-3.9594402, 8.726284] }) fitness: -12558.759 inf: 1
+    #9 Gene(Matrix { data: [-4.1279263, 9.323532] }) fitness: -10176.308 inf: 1
+    #10 Gene(Matrix { data: [-1.0948486, 6.8312607] }) fitness: -10003.189 inf: 1
+    #11 Gene(Matrix { data: [6.5202227, 4.4029083] }) fitness: -26.983456 inf: 1
+    #12 Gene(Matrix { data: [9.2236595, 11.870246] }) fitness: -21.093906 inf: 0
+    #13 Gene(Matrix { data: [9.196007, 9.697033] }) fitness: -18.89304 inf: 0
+    #14 Gene(Matrix { data: [7.516514, 9.116718] }) fitness: -16.633232 inf: 0
+    #15 Gene(Matrix { data: [4.467144, 11.223061] }) fitness: -15.690205 inf: 0
+    #16 Gene(Matrix { data: [7.472748, 6.8858657] }) fitness: -14.358614 inf: 0
+    #17 Gene(Matrix { data: [1.2455215, 11.539139] }) fitness: -12.78466 inf: 0
+    #18 Gene(Matrix { data: [-2.3451548, 13.873457] }) fitness: -11.528302 inf: 0
+    #19 Gene(Matrix { data: [1.4033165, 9.98048] }) fitness: -11.383797 inf: 0
+    Fitness evals 3020
+    g1 evals 1814
+
+    $ cargo run --bin task3 -- -s 41cc89fe9eb4edfc4c947510b3dd20ff -g 50 -t death --xover-op udnx
+
+    Final results
+    #0 Gene(Matrix { data: [6.1585617, 14.774284] }) fitness: -20.932846 inf: 0
+    #1 Gene(Matrix { data: [7.1811295, 13.621376] }) fitness: -20.802505 inf: 0
+    #2 Gene(Matrix { data: [9.81012, 9.31192] }) fitness: -19.12204 inf: 0
+    #3 Gene(Matrix { data: [9.543407, 8.305458] }) fitness: -17.848866 inf: 0
+    #4 Gene(Matrix { data: [7.0705857, 9.601656] }) fitness: -16.672241 inf: 0
+    #5 Gene(Matrix { data: [7.0705857, 9.601656] }) fitness: -16.672241 inf: 0
+    #6 Gene(Matrix { data: [1.0739992, 14.181635] }) fitness: -15.255634 inf: 0
+    #7 Gene(Matrix { data: [9.5876465, 5.6349487] }) fitness: -15.222595 inf: 0
+    #8 Gene(Matrix { data: [6.829262, 6.6455] }) fitness: -13.474762 inf: 0
+    #9 Gene(Matrix { data: [-1.2867737, 13.878632] }) fitness: -12.591858 inf: 0
+    #10 Gene(Matrix { data: [-1.2115062, 13.80036] }) fitness: -12.588854 inf: 0
+    #11 Gene(Matrix { data: [-1.6098251, 14.073074] }) fitness: -12.463249 inf: 0
+    #12 Gene(Matrix { data: [5.5447845, 5.8028793] }) fitness: -11.347664 inf: 0
+    #13 Gene(Matrix { data: [-2.8180947, 13.746477] }) fitness: -10.928383 inf: 0
+    #14 Gene(Matrix { data: [-2.8253574, 13.750282] }) fitness: -10.924925 inf: 0
+    #15 Gene(Matrix { data: [-2.8909867, 13.81357] }) fitness: -10.922584 inf: 0
+    #16 Gene(Matrix { data: [0.57125854, 9.95369] }) fitness: -10.524948 inf: 0
+    #17 Gene(Matrix { data: [-0.725708, 10.893372] }) fitness: -10.167664 inf: 0
+    #18 Gene(Matrix { data: [-1.3458557, 11.454102] }) fitness: -10.108246 inf: 0
+    #19 Gene(Matrix { data: [-3.630371, 13.563568] }) fitness: -9.933197 inf: 0
+    Fitness evals 3020
+    g1 evals 3563
+
+Here the death penalty performs much better, possibly because in this case
+combining with infeasible solutions doesn't offer a great advantage -- however
+tweaking the selection parameters to something more elitist would perhaps give
+static and dynamic penalty a better chance. Note that the death penalty
+performs the most function evaluations of the feasibility constraints and so
+perhaps a fair comparison would hold this statistic constant rather than
+generations.
+
+Project
+=======
+
+Preprocessing
+-------------
+
+[FinnPos](https://github.com/mpsilfve/FinnPos) is used for lemmatisation. It is
+a prerequisites iff you want to run the preprocessing stage. If you only want
+to run the optimisation, you can skip this step.
+
+Optimisation
+------------
+
+

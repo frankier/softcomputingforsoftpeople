@@ -17,11 +17,10 @@ use structopt::StructOpt;
 use rand::Rng;
 use rand::seq::sample_slice;
 use ordered_float::NotNaN;
-use arrayvec::ArrayVec;
 use bitwise::word::*;
 use num_iter::range_step;
 use std::fmt;
-use softcomputingforsoftpeople::{parse_seed, get_rng, gen_rand_pop, Individual, Fitness, OnlyFitnessStats};
+use softcomputingforsoftpeople::{parse_seed, get_rng, gen_rand_pop, Individual, Fitness, OnlyFitnessStats, select_2way_tournament};
 
 const POP_SIZE: usize = 10;
 const POOL_SIZE: usize = 10;
@@ -32,7 +31,7 @@ const P_M: f32 = 0.06;
 const_assert!(pop_size_even; POP_SIZE % 2 == 0);
 const_assert!(pool_size_even; POOL_SIZE % 2 == 0);
 
-#[derive(Rand, Copy, Clone)]
+#[derive(Rand, Copy, Clone, Debug)]
 #[repr(C)]
 struct Gene {
     x1: u8,
@@ -135,8 +134,10 @@ fn main() {
     let opt = Opt::from_args();
     let mut rng = get_rng(opt.seed);
     // Generate random population
-    let mut population = gen_rand_pop(&mut rng, POP_SIZE);
-    let mut breeding_pool = ArrayVec::<[Gene; POOL_SIZE]>::new();
+    let mut population = gen_rand_pop(|| {
+        rng.gen()
+    }, POP_SIZE);
+    let mut breeding_pool = Vec::<Gene>::with_capacity(POOL_SIZE);
     // Iterate
     for gen in 0..50 {
         if opt.verbosity >= 1 {
@@ -144,31 +145,9 @@ fn main() {
             print_individuals(population.as_slice());
         }
         // Selection by 2-way tournament
-        breeding_pool.clear();
-        for i in 0..POOL_SIZE {
-            let mut competitors = sample_slice(&mut rng, &population, 2);
-            competitors.sort_unstable_by_key(|ind| NotNaN::new(-ind.stats.fitness).unwrap());
-            if opt.verbosity >= 2 {
-                println!("#{} Tournament between {} and {}",
-                         i,
-                         competitors[0].state,
-                         competitors[1].state);
-            }
-            let win_chance: f32 = rng.gen();
-            breeding_pool.push(if win_chance < P_S {
-                                   if opt.verbosity >= 2 {
-                                       println!("{} wins due to higher fitness",
-                                                competitors[0].state);
-                                   }
-                                   competitors[0].state
-                               } else {
-                                   if opt.verbosity >= 2 {
-                                       println!("{} wins despite lower fitness",
-                                                competitors[1].state);
-                                   }
-                                   competitors[1].state
-                               });
-        }
+        select_2way_tournament(
+            &mut rng, &mut breeding_pool, &population,
+            POOL_SIZE, P_S, opt.verbosity);
         // Crossover
         for i in range_step(0, POP_SIZE, 2) {
             let crossover_chance: f32 = rng.gen();

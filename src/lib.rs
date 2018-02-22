@@ -1,8 +1,28 @@
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
 extern crate rand;
+extern crate ordered_float;
+extern crate arrayvec;
+extern crate nalgebra;
+#[macro_use]
+extern crate itertools;
+extern crate alga;
+extern crate num_traits;
 
+use alga::general::Ring;
+use num_traits::sign::Signed;
+use std::fmt::Debug;
 use std::str::{from_utf8, Utf8Error};
 use std::num::ParseIntError;
 use rand::{Rng, XorShiftRng, SeedableRng, thread_rng, Rand};
+use ordered_float::NotNaN;
+use rand::seq::sample_slice;
+use nalgebra::{MatrixMN, wrap, DimName, DefaultAllocator, Scalar, abs};
+use nalgebra::allocator::Allocator;
+use rand::distributions::range::SampleRange;
+
+//pub mod proj;
 
 #[derive(Debug)]
 pub enum ParseSeedError {
@@ -83,9 +103,9 @@ pub trait Fitness {
     fn fitness(&self) -> f32;
 }
 
-pub trait State: Fitness + ToString {}
+pub trait State: Fitness + Copy + Clone + Debug {}
 
-pub trait Stats {
+pub trait Stats: Copy + Clone {
     fn new(fitness: f32) -> Self;
 }
 
@@ -117,12 +137,119 @@ pub struct PSOIndividual<G: Gene> {
     pub fitness: f32,
 }*/
 
-pub fn gen_rand_pop<R: Rng, S: State + Rand, SS: Stats>(rng: &mut R, size: usize) -> Vec<Individual<S, SS>> {
+pub fn gen_rand_pop<S, SS, F>(mut gen: F, size: usize) -> Vec<Individual<S, SS>>
+        where
+            S: State,
+            SS: Stats,
+            F: FnMut() -> S {
     return (0..size)
         .map(|_| {
-                 let state: S = rng.gen();
+                 let state = gen();
                  let stats = Stats::new(state.fitness());
                  Individual { state, stats }
              })
         .collect();
+}
+
+pub fn select_2way_tournament<R: Rng, S: State + Clone, SS: Stats>(
+        mut rng: &mut R,
+        breeding_pool: &mut Vec<S>,
+        population: &[Individual<S, SS>],
+        pool_size: usize,
+        prob_select: f32,
+        verbosity: u64) {
+    breeding_pool.clear();
+    for i in 0..pool_size {
+        let mut competitors = sample_slice(&mut rng, &population, 2);
+        competitors.sort_unstable_by_key(|ind| NotNaN::new(-ind.state.fitness()).unwrap());
+        if verbosity >= 2 {
+            println!("#{} Tournament between {:?} and {:?}",
+                     i,
+                     competitors[0].state,
+                     competitors[1].state);
+        }
+        let win_chance: f32 = rng.gen();
+        breeding_pool.push(if win_chance < prob_select {
+                               if verbosity >= 2 {
+                                   println!("{:?} wins due to higher fitness",
+                                            competitors[0].state);
+                               }
+                               competitors[0].state
+                           } else {
+                               if verbosity >= 2 {
+                                   println!("{:?} wins despite lower fitness",
+                                            competitors[1].state);
+                               }
+                               competitors[1].state
+                           });
+    }
+}
+
+#[derive(Clone)]
+pub struct Hypercube<N: Scalar + Ring + Signed + SampleRange + PartialOrd, R: DimName, C: DimName>
+        where DefaultAllocator: Allocator<N, R, C>
+{
+    min: MatrixMN<N, R, C>,
+    max: MatrixMN<N, R, C>,
+    range: MatrixMN<N, R, C>,
+}
+
+impl<N: Scalar + Ring + Signed + SampleRange + PartialOrd, R: DimName, C: DimName> Hypercube<N, R, C>
+        where DefaultAllocator: Allocator<N, R, C>
+{
+    pub fn new(min: MatrixMN<N, R, C>, max: MatrixMN<N, R, C>) -> Hypercube<N, R, C> {
+        assert!(min < max);
+        let range = &max - &min;
+        Hypercube { min, max, range: range }
+    }
+
+    pub fn sample<G: Rng>(&self, rng: &mut G) -> MatrixMN<N, R, C>
+        where DefaultAllocator: Allocator<N, R, C>
+    {
+        self.min.zip_map(&self.max, |min_e, max_e| {
+            rng.gen_range(min_e, max_e)
+        })
+    }
+
+    //pub fn map
+    //pub fn zip_map
+
+    pub fn go_nearest_torus(&self, from: &MatrixMN<N, R, C>, to: &MatrixMN<N, R, C>) -> MatrixMN<N, R, C> {
+        // That the nearest point will be the nearest in each dimension follows for any normed
+        // vector space. This follows from the triangle inequality.
+        let dir = MatrixMN::<N, R, C>::from_iterator(
+            izip!(from.iter(), to.iter(), self.range.iter()).map(|(fd, td, rd)| {
+                // Imagine hypercube boundaries at | and fd could be in either of
+                // two positions:
+                // td   |fd td fd|   td
+
+                // First find the other td which would be nearest:
+                let other_td;
+                if td > fd {
+                    other_td = *td - *rd;
+                } else {
+                    other_td = *td + *rd;
+                }
+                // Now find which of other td and td are nearest and return vector in direction of
+                // closest
+                let towards_td = *td - *fd;
+                let towards_other_td = other_td - *fd;
+                if abs(&towards_td) < abs(&towards_other_td) {
+                    towards_td
+                } else {
+                    towards_other_td
+                }
+            })
+        );
+        //println!("from {:?} to {:?} is nearest at {:?} dir is {:?}", from, to, from + &dir, &dir);
+        //nearest - from
+        dir
+    }
+
+    pub fn place_torus(&self, point: &MatrixMN<N, R, C>) -> MatrixMN<N, R, C> {
+        MatrixMN::<N, R, C>::from_iterator(
+            izip!(point.iter(), self.min.iter(), self.max.iter()).map(|(pd, mind, maxd)| {
+                wrap(*pd, *mind, *maxd)
+            }))
+    }
 }
