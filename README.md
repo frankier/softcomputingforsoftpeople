@@ -5,6 +5,8 @@ The only prerequisites should be Rust and its package manager Cargo, which
 usually come together. Cargo will pull in other requirements. The simplest way
 to get started is with the [rustup script](https://rustup.rs/).
 
+The project has extra prerequisites which are stated in that subsection.
+
 Task 1
 ======
 
@@ -377,6 +379,45 @@ static and dynamic penalty a better chance. Note that the death penalty
 performs the most function evaluations of the feasibility constraints and so
 perhaps a fair comparison would hold this statistic constant rather than
 generations.
+
+Task 4
+======
+
+Q1: Your implementations of the fast non-dominated sorting and the calculation
+   of the crowding distance.
+Q2: Results of the fast non-dominated sorting.
+Q3: The crowding distances of each individual.
+
+Q1 is in task4.rs, which can be run like so:
+
+    $ cargo run --bin task4
+
+Resulting in the output, addressing Q2 and Q3:
+
+   front 0: {1, 2}
+   front 1: {3, 4}
+   front 2: {5}
+   front 3: {6, 7, 8, 12}
+   front 4: {9, 11}
+   front 5: {10}
+   individual 1: (0, 1) rank: 0 crowding: inf
+   individual 2: (1, 0) rank: 0 crowding: inf
+   individual 3: (2, 1.5) rank: 1 crowding: inf
+   individual 4: (1.5, 3) rank: 1 crowding: inf
+   individual 5: (3, 1.6) rank: 2 crowding: inf
+   individual 8: (5, 2.5) rank: 3 crowding: inf
+   individual 12: (3.3, 6.5) rank: 3 crowding: inf
+   individual 6: (4, 3.5) rank: 3 crowding: 1.5558825
+   individual 7: (4.5, 3.1) rank: 3 crowding: 0.83823526
+   individual 9: (6, 5) rank: 4 crowding: inf
+   individual 11: (4.2, 6) rank: 4 crowding: inf
+   individual 10: (5.5, 7) rank: 5 crowding: inf
+
+Q: The selected 6 individuals.
+
+These are the first 6 above: 1, 2, 3, 4, 5, 8
+
+An alternative solution is 1, 2, 3, 4, 5, 12
 
 Project
 =======

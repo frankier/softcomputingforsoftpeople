@@ -110,6 +110,10 @@ impl Stats for PSOStats {
             pbest: PSOBest { position: Vector2::new(f32::NAN, f32::NAN), fitness: f32::INFINITY }
         }
     }
+
+    fn fitness(&self) -> f32 {
+        self.fitness
+    }
 }
 
 type PSOIndividual = Individual<State, PSOStats>;

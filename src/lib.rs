@@ -99,14 +99,21 @@ pub fn get_rng(maybe_seed: Option<[u32; 4]>) -> XorShiftRng {
     }
 }
 
-pub trait Fitness {
-    fn fitness(&self) -> f32;
+pub trait GetFitness {
+    type Fitness: PartialOrd + Debug;
+
+    fn fitness(&self) -> Self::Fitness;
 }
 
-pub trait State: Fitness + Copy + Clone + Debug {}
+pub trait State: GetFitness + Copy + Clone + Debug {}
 
 pub trait Stats: Copy + Clone {
-    fn new(fitness: f32) -> Self;
+    type Fitness: PartialOrd + Debug;
+    type CompetitionFitness: Ord + Debug;
+
+    fn new(fitness: Self::Fitness) -> Self;
+
+    fn fitness(&self) -> Self::CompetitionFitness;
 }
 
 #[derive(Copy, Clone)]
@@ -115,19 +122,35 @@ pub struct Individual<S: State, SS: Stats> {
     pub stats: SS,
 }
 
+impl<F, S, SS> Individual<S, SS>
+        where F: PartialOrd + Debug,
+              S: State<Fitness=F>,
+              SS: Stats<Fitness=F> {
+    fn new(state: S) -> Individual<S, SS> {
+        let stats = SS::new(state.fitness());
+        Individual { state, stats }
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct OnlyFitnessStats {
     pub fitness: f32,
 }
 
 impl Stats for OnlyFitnessStats {
+    type Fitness = f32;
+    type CompetitionFitness = NotNaN<f32>;
+
     fn new(fitness: f32) -> OnlyFitnessStats {
         OnlyFitnessStats {
             fitness
         }
     }
-}
 
+    fn fitness(&self) -> NotNaN<f32> {
+        NotNaN::new(self.fitness).unwrap()
+    }
+}
 
 /*#[derive(Copy, Clone)]
 pub struct PSOIndividual<G: Gene> {
@@ -137,36 +160,36 @@ pub struct PSOIndividual<G: Gene> {
     pub fitness: f32,
 }*/
 
-pub fn gen_rand_pop<S, SS, F>(mut gen: F, size: usize) -> Vec<Individual<S, SS>>
+pub fn gen_rand_pop<F, S, SS, G>(mut gen: G, size: usize) -> Vec<Individual<S, SS>>
         where
-            S: State,
-            SS: Stats,
-            F: FnMut() -> S {
-    return (0..size)
-        .map(|_| {
-                 let state = gen();
-                 let stats = Stats::new(state.fitness());
-                 Individual { state, stats }
-             })
-        .collect();
+            F: PartialOrd + Debug,
+            S: State<Fitness=F>,
+            SS: Stats<Fitness=F>,
+            G: FnMut() -> S {
+    return (0..size).map(|_| { Individual::new(gen()) }).collect();
 }
 
-pub fn select_2way_tournament<R: Rng, S: State + Clone, SS: Stats>(
+pub fn select_2way_tournament<R, S, SS, F>(
         mut rng: &mut R,
         breeding_pool: &mut Vec<S>,
         population: &[Individual<S, SS>],
         pool_size: usize,
         prob_select: f32,
-        verbosity: u64) {
+        verbosity: u64)
+            where
+                R: Rng,
+                F: PartialOrd + Debug,
+                S: State<Fitness=F> + Clone,
+                SS: Stats<Fitness=F> {
     breeding_pool.clear();
     for i in 0..pool_size {
         let mut competitors = sample_slice(&mut rng, &population, 2);
-        competitors.sort_unstable_by_key(|ind| NotNaN::new(-ind.state.fitness()).unwrap());
+        competitors.sort_unstable_by_key(|ind| ind.stats.fitness());
         if verbosity >= 2 {
             println!("#{} Tournament between {:?} and {:?}",
                      i,
-                     competitors[0].state,
-                     competitors[1].state);
+                     competitors[1].state,
+                     competitors[0].state);
         }
         let win_chance: f32 = rng.gen();
         breeding_pool.push(if win_chance < prob_select {
@@ -174,13 +197,13 @@ pub fn select_2way_tournament<R: Rng, S: State + Clone, SS: Stats>(
                                    println!("{:?} wins due to higher fitness",
                                             competitors[0].state);
                                }
-                               competitors[0].state
+                               competitors[1].state
                            } else {
                                if verbosity >= 2 {
                                    println!("{:?} wins despite lower fitness",
                                             competitors[1].state);
                                }
-                               competitors[1].state
+                               competitors[0].state
                            });
     }
 }
