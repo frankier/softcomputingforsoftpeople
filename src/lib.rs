@@ -1,12 +1,8 @@
 #![feature(swap_with_slice)]
 
 extern crate safe_transmute;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
 extern crate rand;
 extern crate ordered_float;
-extern crate arrayvec;
 extern crate nalgebra as na;
 #[macro_use]
 extern crate itertools;
@@ -18,7 +14,6 @@ extern crate bitwise;
 
 use std::fmt::Debug;
 
-pub mod proj;
 pub mod utils;
 pub mod individual;
 pub mod operators;

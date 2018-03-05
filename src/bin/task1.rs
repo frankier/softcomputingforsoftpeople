@@ -2,7 +2,6 @@ extern crate rand;
 #[macro_use]
 extern crate rand_derive;
 extern crate ordered_float;
-extern crate arrayvec;
 extern crate bitwise;
 #[macro_use]
 extern crate static_assertions;

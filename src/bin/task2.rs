@@ -7,7 +7,6 @@ extern crate structopt_derive;
 extern crate nalgebra as na;
 #[macro_use]
 extern crate lazy_static;
-extern crate itertools;
 extern crate alga;
 extern crate num_traits;
 extern crate csv;

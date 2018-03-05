@@ -1,6 +1,5 @@
 extern crate rand;
 extern crate ordered_float;
-extern crate arrayvec;
 extern crate num_iter;
 extern crate structopt;
 #[macro_use]
@@ -11,7 +10,6 @@ extern crate softcomputingforsoftpeople as sc;
 extern crate lazy_static;
 extern crate alga;
 extern crate num_traits;
-extern crate itertools;
 
 use structopt::StructOpt;
 use rand::Rng;

@@ -1,4 +1,5 @@
 /target/
+/proj/target/
 /plots/*.csv
 /OpenSubtitles2018/
 *.dump
