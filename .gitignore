@@ -1,0 +1,5 @@
+/target/
+/plots/*.csv
+/OpenSubtitles2018/
+*.dump
+*.bk

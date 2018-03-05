@@ -10,17 +10,22 @@ extern crate num_iter;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
-extern crate softcomputingforsoftpeople;
-
+extern crate softcomputingforsoftpeople as sc;
+extern crate safe_transmute;
+extern crate hex_slice;
 
 use structopt::StructOpt;
 use rand::Rng;
-use rand::seq::sample_slice;
 use ordered_float::NotNaN;
-use bitwise::word::*;
 use num_iter::range_step;
 use std::fmt;
-use softcomputingforsoftpeople::{parse_seed, get_rng, gen_rand_pop, Individual, Fitness, OnlyFitnessStats, select_2way_tournament};
+use sc::operators::select_2way_tournament;
+use sc::operators::binary::{crossover, mutate_inplace};
+use sc::individual::{Individual, GetFitness, OnlyFitnessStats, State};
+use sc::utils::rand::{parse_seed, get_rng};
+use sc::gen_rand_pop;
+use safe_transmute::{PodTransmutable, guarded_transmute_to_bytes_pod};
+use hex_slice::AsHex;
 
 const POP_SIZE: usize = 10;
 const POOL_SIZE: usize = 10;
@@ -38,12 +43,14 @@ struct Gene {
     x2: u8,
 }
 
+unsafe impl PodTransmutable for Gene {}
+
 impl fmt::Display for Gene {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (x1f, x2f) = interpret_gene(self.to_owned());
         write!(f,
-               "<Gene {:04x} x1: {:02x} = {} x2: {:02x} = {}>",
-               gene_bits(self.to_owned()),
+               "<Gene {:02x} x1: {:02x} = {} x2: {:02x} = {}>",
+               guarded_transmute_to_bytes_pod(self).as_hex(),
                self.x1,
                x1f,
                self.x2,
@@ -67,49 +74,16 @@ fn interpret_gene(gene: Gene) -> (f32, f32) {
     (fixed_to_float(gene.x1), fixed_to_float(gene.x2))
 }
 
-impl softcomputingforsoftpeople::Fitness for Gene {
+impl GetFitness for Gene {
+    type Fitness = f32;
+
     fn fitness(&self) -> f32 {
         let (x1f, x2f) = interpret_gene(*self);
         -(x1f + x2f - 2.0 * x1f * x1f - x2f * x2f + x1f * x2f)
     }
 }
 
-impl softcomputingforsoftpeople::State for Gene {}
-
-fn gene_bits(gene: Gene) -> u16 {
-    unsafe { std::mem::transmute::<Gene, u16>(gene) }
-}
-
-fn gene_bits_mut(gene: &mut Gene) -> &mut u16 {
-    unsafe { std::mem::transmute::<&mut Gene, &mut u16>(gene) }
-}
-
-/// Performs single-point crossover in place, replacing the parents with the children
-fn crossover_inplace(mummy: &mut Gene, daddy: &mut Gene, bit: u8) {
-    let mummys_bits = gene_bits_mut(mummy);
-    let daddys_bits = gene_bits_mut(daddy);
-    let mask = 0.set_bits_geq(bit);
-    *daddys_bits ^= *mummys_bits & mask;
-    *mummys_bits ^= *daddys_bits & mask;
-    *daddys_bits ^= *mummys_bits & mask;
-}
-
-fn crossover(mut mummy: Gene, mut daddy: Gene, bit: u8) -> (Gene, Gene) {
-    crossover_inplace(&mut mummy, &mut daddy, bit);
-    (mummy, daddy)
-}
-
-fn mutate_inplace<R: Rng>(rng: &mut R, parent: &mut Gene) {
-    let bits = gene_bits_mut(parent);
-    let mut mask = 1;
-    for _ in 0..16 {
-        let flip_chance: f32 = rng.gen();
-        if flip_chance < 1.0 / 16.0 {
-            *bits ^= mask;
-        }
-        mask <<= 1;
-    }
-}
+impl State for Gene {}
 
 fn print_individuals(individuals: &[Individual<Gene, OnlyFitnessStats>]) {
     for (idx, ind) in individuals.iter().enumerate() {

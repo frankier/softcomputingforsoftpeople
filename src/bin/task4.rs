@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 use na::{VectorN, Vector2, Dim, DefaultAllocator, U2};
 use na::allocator::Allocator;
 use std::cmp::Ordering;
-use sc::{Stats, Individual};
+use sc::individual::Stats;
 use std::f32;
 
 /*pub trait Fitnesses<D>
@@ -17,8 +17,8 @@ use std::f32;
     fn fitness(&self) -> VectorN<f32, D>;
 }*/
 
-#[derive(Copy, Clone, Debug)]
-struct Gene();
+//#[derive(Copy, Clone, Debug)]
+//struct Gene();
 
 #[derive(Copy, Clone, Debug)]
 pub struct FitnessesRankStats<D>
@@ -85,7 +85,7 @@ impl<D> Stats for FitnessesRankStats<D>
     }
 }
 
-type T4aIndividual = Individual<Gene, FitnessesRankStats<U2>>;
+//type T4aIndividual = Individual<Gene, FitnessesRankStats<U2>>;
 
 fn non_dominated_sort<D>(points: &mut [&mut FitnessesRankStats<D>]) -> Vec<BTreeSet<usize>>
         where

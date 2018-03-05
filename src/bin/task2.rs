@@ -1,33 +1,30 @@
-extern crate softcomputingforsoftpeople;
+extern crate softcomputingforsoftpeople as sc;
 extern crate ordered_float;
 extern crate rand;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
-extern crate nalgebra;
+extern crate nalgebra as na;
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
 extern crate itertools;
 extern crate alga;
 extern crate num_traits;
 extern crate csv;
 
-use alga::general::{Ring};
 use ordered_float::NotNaN;
 use std::fmt;
 use std::f32;
 use rand::Rng;
-use rand::distributions::range::SampleRange;
 use structopt::StructOpt;
-use nalgebra::{Vector2, MatrixMN, norm, wrap, DimName, DefaultAllocator, Scalar, U1, U2, abs};
-use nalgebra::allocator::Allocator;
-use softcomputingforsoftpeople::{parse_seed, get_rng, Individual, Fitness, Stats, Hypercube};
-use num_traits::sign::Signed;
+use na::{Vector2, norm, U1, U2};
+use sc::utils::rand::{parse_seed, get_rng};
+use sc::utils::real::Hypercube;
+use sc::individual::{Individual, GetFitness, Stats};
 use std::fs::File;
 
 lazy_static! {
-    static ref HYPERCUBE: Hypercube<f32, U2, U1> = Hypercube::new(Vector2::<f32>::new((-1.0), (-1.0)), Vector2::<f32>::new(2.0, 1.0));
+    static ref HYPERCUBE: Hypercube<f32, U2, U1> = Hypercube::new(Vector2::<f32>::new(-1.0, -1.0), Vector2::<f32>::new(2.0, 1.0));
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -73,13 +70,15 @@ impl fmt::Display for PSOBest {
     }
 }
 
-impl Fitness for State {
+impl GetFitness for State {
+    type Fitness = f32;
+
     fn fitness(&self) -> f32 {
         f32::cos(self.position[0]) * f32::sin(self.position[1]) - self.position[0] / (self.position[1] * self.position[1] + 1.0)
     }
 }
 
-impl softcomputingforsoftpeople::State for State {}
+impl sc::individual::State for State {}
 
 #[derive(Copy, Clone)]
 struct PSOBest {
@@ -104,6 +103,9 @@ struct PSOStats {
 }
 
 impl Stats for PSOStats {
+    type Fitness = f32;
+    type CompetitionFitness = NotNaN<f32>;
+
     fn new(fitness: f32) -> PSOStats {
         PSOStats {
             fitness,
@@ -111,8 +113,8 @@ impl Stats for PSOStats {
         }
     }
 
-    fn fitness(&self) -> f32 {
-        self.fitness
+    fn fitness(&self) -> NotNaN<f32> {
+        NotNaN::new(self.fitness).unwrap()
     }
 }
 
