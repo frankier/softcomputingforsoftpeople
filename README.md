@@ -394,24 +394,24 @@ Q1 is in task4.rs, which can be run like so:
 
 Resulting in the output, addressing Q2 and Q3:
 
-   front 0: {1, 2}
-   front 1: {3, 4}
-   front 2: {5}
-   front 3: {6, 7, 8, 12}
-   front 4: {9, 11}
-   front 5: {10}
-   individual 1: (0, 1) rank: 0 crowding: inf
-   individual 2: (1, 0) rank: 0 crowding: inf
-   individual 3: (2, 1.5) rank: 1 crowding: inf
-   individual 4: (1.5, 3) rank: 1 crowding: inf
-   individual 5: (3, 1.6) rank: 2 crowding: inf
-   individual 8: (5, 2.5) rank: 3 crowding: inf
-   individual 12: (3.3, 6.5) rank: 3 crowding: inf
-   individual 6: (4, 3.5) rank: 3 crowding: 1.5558825
-   individual 7: (4.5, 3.1) rank: 3 crowding: 0.83823526
-   individual 9: (6, 5) rank: 4 crowding: inf
-   individual 11: (4.2, 6) rank: 4 crowding: inf
-   individual 10: (5.5, 7) rank: 5 crowding: inf
+    front 0: {1, 2}
+    front 1: {3, 4}
+    front 2: {5}
+    front 3: {6, 7, 8, 12}
+    front 4: {9, 11}
+    front 5: {10}
+    individual 1: (0, 1) rank: 0 crowding: inf
+    individual 2: (1, 0) rank: 0 crowding: inf
+    individual 3: (2, 1.5) rank: 1 crowding: inf
+    individual 4: (1.5, 3) rank: 1 crowding: inf
+    individual 5: (3, 1.6) rank: 2 crowding: inf
+    individual 8: (5, 2.5) rank: 3 crowding: inf
+    individual 12: (3.3, 6.5) rank: 3 crowding: inf
+    individual 6: (4, 3.5) rank: 3 crowding: 1.5558825
+    individual 7: (4.5, 3.1) rank: 3 crowding: 0.83823526
+    individual 9: (6, 5) rank: 4 crowding: inf
+    individual 11: (4.2, 6) rank: 4 crowding: inf
+    individual 10: (5.5, 7) rank: 5 crowding: inf
 
 Q: The selected 6 individuals.
 
@@ -435,147 +435,147 @@ scalarized fitnesses to be compared.
 Here are results for blend (which appears particularly effective for this
 problem):
 
-   $ cargo run --bin task4b -- --xover-op blend -s d9a876f733a4b667dcd70e6f09bf1399
-
-   Nearest neighbors according to weight vectors
-   #1: 1; 2; 3; 4
-   #2: 1; 2; 3; 4
-   #3: 1; 2; 3; 4
-   #4: 2; 3; 4; 5
-   #5: 3; 4; 5; 6
-   #6: 4; 5; 6; 7
-   #7: 5; 6; 7; 8
-   #8: 6; 7; 8; 9
-   #9: 7; 8; 9; 10
-   #10: 8; 9; 10; 11
-   #11: 9; 10; 11; 12
-   #12: 9; 10; 11; 12
-
-   Tchebycheff fitnesses
-   #1: 53.981716
-   #2: 6.9260936
-   #3: 15.620173
-   #4: 62.48117
-   #5: 44.239986
-   #6: 11.07273
-   #7: 20.563711
-   #8: 7.670256
-   #9: 18.767246
-   #10: 16.069315
-   #11: 12.385546
-   #12: 8.747936
-
-   Weighted sum fitnesses
-   #1: 40.89081
-   #2: -6.5429564
-   #3: 2.3577943
-   #4: 50.57318
-   #5: 32.439407
-   #6: 0.033107758
-   #7: 7.6414413
-   #8: -10.828571
-   #9: 8.273174
-   #10: 5.6186914
-   #11: 0.008880615
-   #12: -12.134939
-
-   Tchebycheff next generation
-   New z_star: (-20, -12.451333)
-   #0 solution: (-0.055834517, -0.54605156, -0.8069009) fitnesses: (-17.189812, -6.0915556) scalarized (prev z): 6.4455757
-   #1 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 2.0926304
-   #2 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 1.9023913
-   #3 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 1.7121521
-   #4 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 1.8247827
-   #5 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 2.2809784
-   #6 solution: (-0.23211873, -1.4821924, -1.1470863) fitnesses: (-14.281765, -10.740406) scalarized (prev z): 3.1190374
-   #7 solution: (-0.23211873, -1.4821924, -1.1470863) fitnesses: (-14.281765, -10.740406) scalarized (prev z): 3.6388767
-   #8 solution: (-0.8870785, -1.5739399, -0.81489956) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 4.3761377
-   #9 solution: (-0.8870785, -1.5739399, -0.81489956) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 4.923155
-   #10 solution: (-0.8870785, -1.5739398, -0.8148995) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 5.470172
-   #11 solution: (-0.8870785, -1.5739399, -0.8148995) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 6.017189
-
-   Weighted sum next generation
-   New z_star: (-20, -18.225327)
-   #0 solution: (-1.3334328, -2.2892861, 3.831472) fitnesses: (-9.982508, 22.742815) scalarized (prev z): 24.810345
-   #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): -6.5429564
-   #2 solution: (-0.832, -1.6051, 2.011) fitnesses: (-12.943087, 5.182191) scalarized (prev z): 2.3577943
-   #3 solution: (-0.9639456, -1.7851348, 2.4900336) fitnesses: (-12.083259, 9.020931) scalarized (prev z): 4.085328
-   #4 solution: (-2.8889937, -2.044872, -0.34149182) fitnesses: (-11.532608, -13.732385) scalarized (prev z): -14.180865
-   #5 solution: (-2.8889937, -2.044872, -0.34149182) fitnesses: (-11.532608, -13.732385) scalarized (prev z): -13.980885
-   #6 solution: (-2.6938858, -3.1656594, -2.7097082) fitnesses: (-8.700315, -18.225327) scalarized (prev z): -14.686714
-   #7 solution: (-2.6938858, -3.1656594, -2.7097082) fitnesses: (-8.700315, -18.225327) scalarized (prev z): -13.820805
-   #8 solution: (-2.8889937, -2.044872, -0.34149182) fitnesses: (-11.532608, -13.732385) scalarized (prev z): -13.380947
-   #9 solution: (-2.9279857, -1.8208838, 0.13179415) fitnesses: (-11.958834, -11.17929) scalarized (prev z): -12.833397
-   #10 solution: (-2.9279857, -1.8208838, 0.13179415) fitnesses: (-11.958834, -11.17929) scalarized (prev z): -12.904265
-   #11 solution: (-2.9279857, -1.8208838, 0.13179415) fitnesses: (-11.958834, -11.17929) scalarized (prev z): -12.975133
+    $ cargo run --bin task4b -- --xover-op blend -s d9a876f733a4b667dcd70e6f09bf1399
+ 
+    Nearest neighbors according to weight vectors
+    #1: 1; 2; 3; 4
+    #2: 1; 2; 3; 4
+    #3: 1; 2; 3; 4
+    #4: 2; 3; 4; 5
+    #5: 3; 4; 5; 6
+    #6: 4; 5; 6; 7
+    #7: 5; 6; 7; 8
+    #8: 6; 7; 8; 9
+    #9: 7; 8; 9; 10
+    #10: 8; 9; 10; 11
+    #11: 9; 10; 11; 12
+    #12: 9; 10; 11; 12
+ 
+    Tchebycheff fitnesses
+    #1: 53.981716
+    #2: 6.9260936
+    #3: 15.620173
+    #4: 62.48117
+    #5: 44.239986
+    #6: 11.07273
+    #7: 20.563711
+    #8: 7.670256
+    #9: 18.767246
+    #10: 16.069315
+    #11: 12.385546
+    #12: 8.747936
+ 
+    Weighted sum fitnesses
+    #1: 40.89081
+    #2: -6.5429564
+    #3: 2.3577943
+    #4: 50.57318
+    #5: 32.439407
+    #6: 0.033107758
+    #7: 7.6414413
+    #8: -10.828571
+    #9: 8.273174
+    #10: 5.6186914
+    #11: 0.008880615
+    #12: -12.134939
+ 
+    Tchebycheff next generation
+    New z_star: (-20, -12.451333)
+    #0 solution: (-0.055834517, -0.54605156, -0.8069009) fitnesses: (-17.189812, -6.0915556) scalarized (prev z): 6.4455757
+    #1 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 2.0926304
+    #2 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 1.9023913
+    #3 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 1.7121521
+    #4 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 1.8247827
+    #5 solution: (-0.2576566, -1.2637597, -0.9879695) fitnesses: (-14.981848, -9.90737) scalarized (prev z): 2.2809784
+    #6 solution: (-0.23211873, -1.4821924, -1.1470863) fitnesses: (-14.281765, -10.740406) scalarized (prev z): 3.1190374
+    #7 solution: (-0.23211873, -1.4821924, -1.1470863) fitnesses: (-14.281765, -10.740406) scalarized (prev z): 3.6388767
+    #8 solution: (-0.8870785, -1.5739399, -0.81489956) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 4.3761377
+    #9 solution: (-0.8870785, -1.5739399, -0.81489956) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 4.923155
+    #10 solution: (-0.8870785, -1.5739398, -0.8148995) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 5.470172
+    #11 solution: (-0.8870785, -1.5739399, -0.8148995) fitnesses: (-13.982811, -12.451333) scalarized (prev z): 6.017189
+ 
+    Weighted sum next generation
+    New z_star: (-20, -18.225327)
+    #0 solution: (-1.3334328, -2.2892861, 3.831472) fitnesses: (-9.982508, 22.742815) scalarized (prev z): 24.810345
+    #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): -6.5429564
+    #2 solution: (-0.832, -1.6051, 2.011) fitnesses: (-12.943087, 5.182191) scalarized (prev z): 2.3577943
+    #3 solution: (-0.9639456, -1.7851348, 2.4900336) fitnesses: (-12.083259, 9.020931) scalarized (prev z): 4.085328
+    #4 solution: (-2.8889937, -2.044872, -0.34149182) fitnesses: (-11.532608, -13.732385) scalarized (prev z): -14.180865
+    #5 solution: (-2.8889937, -2.044872, -0.34149182) fitnesses: (-11.532608, -13.732385) scalarized (prev z): -13.980885
+    #6 solution: (-2.6938858, -3.1656594, -2.7097082) fitnesses: (-8.700315, -18.225327) scalarized (prev z): -14.686714
+    #7 solution: (-2.6938858, -3.1656594, -2.7097082) fitnesses: (-8.700315, -18.225327) scalarized (prev z): -13.820805
+    #8 solution: (-2.8889937, -2.044872, -0.34149182) fitnesses: (-11.532608, -13.732385) scalarized (prev z): -13.380947
+    #9 solution: (-2.9279857, -1.8208838, 0.13179415) fitnesses: (-11.958834, -11.17929) scalarized (prev z): -12.833397
+    #10 solution: (-2.9279857, -1.8208838, 0.13179415) fitnesses: (-11.958834, -11.17929) scalarized (prev z): -12.904265
+    #11 solution: (-2.9279857, -1.8208838, 0.13179415) fitnesses: (-11.958834, -11.17929) scalarized (prev z): -12.975133
 
 And for undx:
 
-   $ cargo run --bin task4b -- --xover-op udnx -s d9a876f733a4b667dcd70e6f09bf1399
-   [...]
-   Tchebycheff next generation
-   New z_star: (-20, -12)
-   #0 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): 13.09091
-   #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): 6.9260936
-   #2 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): 10.909091
-   #3 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): 9.818182
-   #4 solution: (1.2797, 4.2033, 0.3913) fitnesses: (-8.45159, 48.82998) scalarized (prev z): 44.239986
-   #5 solution: (-2.0802, -4.4732, 1.9811) fitnesses: (-7.487171, 5.4000063) scalarized (prev z): 11.07273
-   #6 solution: (-0.6835, 2.3786, 1.6653) fitnesses: (-11.690825, 25.700134) scalarized (prev z): 20.563711
-   #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): 7.670256
-   #8 solution: (4.8406, -0.7716, -3.7199) fitnesses: (-8.42935, 39.60993) scalarized (prev z): 18.767246
-   #9 solution: (-3.3283, 0.4787, 4.9908) fitnesses: (-8.772984, 46.92082) scalarized (prev z): 16.069315
-   #10 solution: (-3.9378, 4.4274, -3.2888) fitnesses: (-6.3759003, 31.928345) scalarized (prev z): 12.385546
-   #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): 8.747936
-
-   Weighted sum next generation
-   New z_star: (-20, -12)
-   #0 solution: (-1.0074, -3.0188, 4.8305) fitnesses: (-8.492072, 37.48324) scalarized (prev z): 40.89081
-   #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): -6.5429564
-   #2 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): -0.88406086
-   #3 solution: (-1.8032668, 0.46447706, -0.06378198) fitnesses: (-15.99556, -3.54128) scalarized (prev z): -7.259836
-   #4 solution: (-5, -3.1897578, -4.2208896) fitnesses: (-6.5249853, -9.062775) scalarized (prev z): -8.963831
-   #5 solution: (-1.8032668, 0.46447706, -0.06378198) fitnesses: (-15.99556, -3.54128) scalarized (prev z): -9.524251
-   #6 solution: (-1.8032668, 0.46447706, -0.06378198) fitnesses: (-15.99556, -3.54128) scalarized (prev z): -10.656458
-   #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): -10.828571
-   #8 solution: (4.8406, -0.7716, -3.7199) fitnesses: (-8.42935, 39.60993) scalarized (prev z): 8.273174
-   #9 solution: (-3.3283, 0.4787, 4.9908) fitnesses: (-8.772984, 46.92082) scalarized (prev z): 5.6186914
-   #10 solution: (-3.9378, 4.4274, -3.2888) fitnesses: (-6.3759003, 31.928345) scalarized (prev z): 0.008880615
-   #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): -12.134939
+    $ cargo run --bin task4b -- --xover-op udnx -s d9a876f733a4b667dcd70e6f09bf1399
+    [...]
+    Tchebycheff next generation
+    New z_star: (-20, -12)
+    #0 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): 13.09091
+    #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): 6.9260936
+    #2 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): 10.909091
+    #3 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): 9.818182
+    #4 solution: (1.2797, 4.2033, 0.3913) fitnesses: (-8.45159, 48.82998) scalarized (prev z): 44.239986
+    #5 solution: (-2.0802, -4.4732, 1.9811) fitnesses: (-7.487171, 5.4000063) scalarized (prev z): 11.07273
+    #6 solution: (-0.6835, 2.3786, 1.6653) fitnesses: (-11.690825, 25.700134) scalarized (prev z): 20.563711
+    #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): 7.670256
+    #8 solution: (4.8406, -0.7716, -3.7199) fitnesses: (-8.42935, 39.60993) scalarized (prev z): 18.767246
+    #9 solution: (-3.3283, 0.4787, 4.9908) fitnesses: (-8.772984, 46.92082) scalarized (prev z): 16.069315
+    #10 solution: (-3.9378, 4.4274, -3.2888) fitnesses: (-6.3759003, 31.928345) scalarized (prev z): 12.385546
+    #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): 8.747936
+ 
+    Weighted sum next generation
+    New z_star: (-20, -12)
+    #0 solution: (-1.0074, -3.0188, 4.8305) fitnesses: (-8.492072, 37.48324) scalarized (prev z): 40.89081
+    #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): -6.5429564
+    #2 solution: (-5, -5, -5) fitnesses: (-4.8623347, 0) scalarized (prev z): -0.88406086
+    #3 solution: (-1.8032668, 0.46447706, -0.06378198) fitnesses: (-15.99556, -3.54128) scalarized (prev z): -7.259836
+    #4 solution: (-5, -3.1897578, -4.2208896) fitnesses: (-6.5249853, -9.062775) scalarized (prev z): -8.963831
+    #5 solution: (-1.8032668, 0.46447706, -0.06378198) fitnesses: (-15.99556, -3.54128) scalarized (prev z): -9.524251
+    #6 solution: (-1.8032668, 0.46447706, -0.06378198) fitnesses: (-15.99556, -3.54128) scalarized (prev z): -10.656458
+    #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): -10.828571
+    #8 solution: (4.8406, -0.7716, -3.7199) fitnesses: (-8.42935, 39.60993) scalarized (prev z): 8.273174
+    #9 solution: (-3.3283, 0.4787, 4.9908) fitnesses: (-8.772984, 46.92082) scalarized (prev z): 5.6186914
+    #10 solution: (-3.9378, 4.4274, -3.2888) fitnesses: (-6.3759003, 31.928345) scalarized (prev z): 0.008880615
+    #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): -12.134939
 
 And for linear:
 
-   $ cargo run --bin task4b -- --xover-op linear -s d9a876f733a4b667dcd70e6f09bf1399
-   [...]
-   Tchebycheff next generation
-   New z_star: (-20, -12.536691)
-   #0 solution: (-0.38110006, -2.4128003, -3.8099504) fitnesses: (-10.193024, -12.536689) scalarized (prev z): 0.5854787
-   #1 solution: (-0.38110006, -2.4128, -3.80995) fitnesses: (-10.193024, -12.536691) scalarized (prev z): 0.8915433
-   #2 solution: (-0.38110006, -2.4128, -3.80995) fitnesses: (-10.193024, -12.536691) scalarized (prev z): 1.7830867
-   #3 solution: (-0.38110006, -2.4128, -3.80995) fitnesses: (-10.193024, -12.536691) scalarized (prev z): 2.67463
-   #4 solution: (-0.38110006, -2.4128003, -3.8099504) fitnesses: (-10.193024, -12.536689) scalarized (prev z): 3.5661733
-   #5 solution: (0.4684499, -1.3826003, -5) fitnesses: (-11.011274, -2.4397235) scalarized (prev z): 6.0838118
-   #6 solution: (-0.22990009, -4.8085003, -5) fitnesses: (-6.3154764, -2.0174723) scalarized (prev z): 7.464286
-   #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): 7.670256
-   #8 solution: (-0.2903443, -5, -5) fitnesses: (-6.10377, -1.3674216) scalarized (prev z): 10.10635
-   #9 solution: (-0.2903443, -5, -5) fitnesses: (-6.10377, -1.3674216) scalarized (prev z): 11.369643
-   #10 solution: (-3.9378, 4.4274, -3.2888) fitnesses: (-6.3759003, 31.928345) scalarized (prev z): 12.385546
-   #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): 8.747936
-
-   Weighted sum next generation
-   New z_star: (-20, -12)
-   #0 solution: (-0.78815, -1.251675, 1.3061249) fitnesses: (-14.4032955, 0.22533226) scalarized (prev z): 0.24581702
-   #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): -6.5429564
-   #2 solution: (-0.78815, -1.251675, 1.3061249) fitnesses: (-14.4032955, 0.22533226) scalarized (prev z): -2.4139335
-   #3 solution: (-0.78815, -1.251675, 1.3061249) fitnesses: (-14.4032955, 0.22533226) scalarized (prev z): -3.743809
-   #4 solution: (-5, -0.9632001, -5) fitnesses: (-7.223547, -3.888246) scalarized (prev z): -5.45456
-   #5 solution: (-5, -0.9632001, -5) fitnesses: (-7.223547, -3.888246) scalarized (prev z): -5.7577686
-   #6 solution: (-5, -0.9632001, -5) fitnesses: (-7.223547, -3.888246) scalarized (prev z): -6.060978
-   #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): -10.828571
-   #8 solution: (0.58614993, 0.61737514, -4.5109997) fitnesses: (-12.45723, 4.536468) scalarized (prev z): -7.410179
-   #9 solution: (0.58614993, 0.61737514, -4.5109997) fitnesses: (-12.45723, 4.536468) scalarized (prev z): -8.95506
-   #10 solution: (0.58614993, 0.61737514, -4.5109997) fitnesses: (-12.45723, 4.536468) scalarized (prev z): -10.499943
-   #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): -12.134939
+    $ cargo run --bin task4b -- --xover-op linear -s d9a876f733a4b667dcd70e6f09bf1399
+    [...]
+    Tchebycheff next generation
+    New z_star: (-20, -12.536691)
+    #0 solution: (-0.38110006, -2.4128003, -3.8099504) fitnesses: (-10.193024, -12.536689) scalarized (prev z): 0.5854787
+    #1 solution: (-0.38110006, -2.4128, -3.80995) fitnesses: (-10.193024, -12.536691) scalarized (prev z): 0.8915433
+    #2 solution: (-0.38110006, -2.4128, -3.80995) fitnesses: (-10.193024, -12.536691) scalarized (prev z): 1.7830867
+    #3 solution: (-0.38110006, -2.4128, -3.80995) fitnesses: (-10.193024, -12.536691) scalarized (prev z): 2.67463
+    #4 solution: (-0.38110006, -2.4128003, -3.8099504) fitnesses: (-10.193024, -12.536689) scalarized (prev z): 3.5661733
+    #5 solution: (0.4684499, -1.3826003, -5) fitnesses: (-11.011274, -2.4397235) scalarized (prev z): 6.0838118
+    #6 solution: (-0.22990009, -4.8085003, -5) fitnesses: (-6.3154764, -2.0174723) scalarized (prev z): 7.464286
+    #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): 7.670256
+    #8 solution: (-0.2903443, -5, -5) fitnesses: (-6.10377, -1.3674216) scalarized (prev z): 10.10635
+    #9 solution: (-0.2903443, -5, -5) fitnesses: (-6.10377, -1.3674216) scalarized (prev z): 11.369643
+    #10 solution: (-3.9378, 4.4274, -3.2888) fitnesses: (-6.3759003, 31.928345) scalarized (prev z): 12.385546
+    #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): 8.747936
+ 
+    Weighted sum next generation
+    New z_star: (-20, -12)
+    #0 solution: (-0.78815, -1.251675, 1.3061249) fitnesses: (-14.4032955, 0.22533226) scalarized (prev z): 0.24581702
+    #1 solution: (0.2688, -0.1031, -1.9855) fitnesses: (-16.159546, -5.0739064) scalarized (prev z): -6.5429564
+    #2 solution: (-0.78815, -1.251675, 1.3061249) fitnesses: (-14.4032955, 0.22533226) scalarized (prev z): -2.4139335
+    #3 solution: (-0.78815, -1.251675, 1.3061249) fitnesses: (-14.4032955, 0.22533226) scalarized (prev z): -3.743809
+    #4 solution: (-5, -0.9632001, -5) fitnesses: (-7.223547, -3.888246) scalarized (prev z): -5.45456
+    #5 solution: (-5, -0.9632001, -5) fitnesses: (-7.223547, -3.888246) scalarized (prev z): -5.7577686
+    #6 solution: (-5, -0.9632001, -5) fitnesses: (-7.223547, -3.888246) scalarized (prev z): -6.060978
+    #7 solution: (-4.8451, -2.3088, -3.2187) fitnesses: (-7.94674, -12.69742) scalarized (prev z): -10.828571
+    #8 solution: (0.58614993, 0.61737514, -4.5109997) fitnesses: (-12.45723, 4.536468) scalarized (prev z): -7.410179
+    #9 solution: (0.58614993, 0.61737514, -4.5109997) fitnesses: (-12.45723, 4.536468) scalarized (prev z): -8.95506
+    #10 solution: (0.58614993, 0.61737514, -4.5109997) fitnesses: (-12.45723, 4.536468) scalarized (prev z): -10.499943
+    #11 solution: (-1.2759, -0.8226, -4.674) fitnesses: (-11.252064, -9.711634) scalarized (prev z): -12.134939
 
 Project
 =======
