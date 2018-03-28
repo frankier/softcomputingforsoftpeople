@@ -22,16 +22,15 @@ use sc::gen_rand_pop;
 use sc::individual::{Individual, GetFitness, OnlyFitnessStats, State};
 use sc::individual::real::RealGene;
 use sc::operators::select_2way_tournament;
-use sc::operators::real::{Crossover, Mutation, UndxCrossover, LinearCrossover, BlendCrossover, GlobalUniformMut, LocalUniformMut};
+use sc::operators::real::{Crossover, Mutation, UndxCrossover, LinearCrossover, BlendCrossover,
+                          GlobalUniformMut, LocalUniformMut};
 use sc::utils::real::Hypercube;
 
 static mut FITNESS_EVALS: u64 = 0;
 static mut G1_EVALS: u64 = 0;
 
 #[derive(Copy, Clone, Debug)]
-struct Gene (
-    Vector2<f32>,
-);
+struct Gene(Vector2<f32>);
 
 impl RealGene<f32, U2> for Gene {
     fn from_vec(space: Vector2<f32>) -> Gene {
@@ -63,7 +62,11 @@ impl State for Gene {}
 
 fn print_individuals(individuals: &[Individual<Gene, OnlyFitnessStats>]) {
     for (idx, ind) in individuals.iter().enumerate() {
-        println!("#{:?} {:?} fitness: {:?} inf: {:?}", idx, ind.state, ind.stats.fitness, infeasibility(&ind.state));
+        println!("#{:?} {:?} fitness: {:?} inf: {:?}",
+                 idx,
+                 ind.state,
+                 ind.stats.fitness,
+                 infeasibility(&ind.state));
     }
 }
 
@@ -153,8 +156,8 @@ fn g1(solution: &Gene) -> f32 {
         G1_EVALS += 1;
     }
     (solution.0[1] - 5.1 * solution.0[0] * solution.0[0] / (4.0 * PI * PI) +
-     5.0 * solution.0[0] / PI - 6.0).powf(2.0) +
-    (10.0 - 10.0 / (8.0 * PI)) * f32::cos(solution.0[0]) + 9.0
+     5.0 * solution.0[0] / PI - 6.0)
+            .powf(2.0) + (10.0 - 10.0 / (8.0 * PI)) * f32::cos(solution.0[0]) + 9.0
 }
 
 fn g2(solution: &Gene) -> f32 {
@@ -167,7 +170,7 @@ fn infeasibility(solution: &Gene) -> u8 {
     f1 as u8 + f2 as u8
 }
 
-fn run_ga<R: Rng, CX: Crossover<U2, Gene>, M: Mutation<U2, Gene>>(rng: &mut R, opt: &Opt, xover_op: CX, mutation_op: M, population: &mut Vec<Individual<Gene, OnlyFitnessStats>>) {
+fn run_ga<R: Rng, CX: Crossover<U2, Gene>, M: Mutation<U2, Gene>>(rng: &mut R, opt: &Opt, xover_op: CX, mutation_op: M, population: &mut Vec<Individual<Gene, OnlyFitnessStats>>){
     let mut breeding_pool = Vec::<Gene>::with_capacity(opt.pool_size);
     // Iterate
     for gen in 0..opt.generations {
@@ -176,15 +179,20 @@ fn run_ga<R: Rng, CX: Crossover<U2, Gene>, M: Mutation<U2, Gene>>(rng: &mut R, o
             print_individuals(population.as_slice());
         }
         // Selection by 2-way tournament
-        select_2way_tournament(
-            rng, &mut breeding_pool, population.as_slice(),
-            opt.pool_size, opt.prob_select, opt.verbosity);
+        select_2way_tournament(rng,
+                               &mut breeding_pool,
+                               population.as_slice(),
+                               opt.pool_size,
+                               opt.prob_select,
+                               opt.verbosity);
         // Crossover
         for i in range_step(0, opt.pop_size, 2) {
             let crossover_chance: f32 = rng.gen();
             if crossover_chance < opt.prob_xover {
                 // XXX: This could be done with a trait rather than just giving all 3 at runtime
-                let parents = [breeding_pool[i], breeding_pool[i + 1], breeding_pool[(i + 2) % opt.pop_size]];
+                let parents = [breeding_pool[i],
+                               breeding_pool[i + 1],
+                               breeding_pool[(i + 2) % opt.pop_size]];
                 let mut son;
                 let mut daughter;
                 loop {
@@ -263,7 +271,8 @@ fn run_ga<R: Rng, CX: Crossover<U2, Gene>, M: Mutation<U2, Gene>>(rng: &mut R, o
                 if g2_result <= 0.0 {
                     sum_g += abs(&g2_result).powf(opt.beta);
                 }
-                ind.stats.fitness = ind.state.fitness() - (opt.c * gen as f32).powf(opt.alpha) * sum_g;
+                ind.stats.fitness = ind.state.fitness() -
+                                    (opt.c * gen as f32).powf(opt.alpha) * sum_g;
             } else {
                 ind.stats.fitness = ind.state.fitness();
             }
@@ -271,11 +280,19 @@ fn run_ga<R: Rng, CX: Crossover<U2, Gene>, M: Mutation<U2, Gene>>(rng: &mut R, o
     }
 }
 
-fn dispatch_mut<R: Rng, CX: Crossover<U2, Gene>>(rng: &mut R, opt: &Opt, xover_op: CX, population: &mut Vec<Individual<Gene, OnlyFitnessStats>>) {
+fn dispatch_mut<R: Rng, CX: Crossover<U2, Gene>>(rng: &mut R, opt: &Opt, xover_op: CX, population: &mut Vec<Individual<Gene, OnlyFitnessStats>>){
     if opt.mut_op == "global" {
-        run_ga(rng, opt, xover_op, GlobalUniformMut::new(HYPERCUBE.clone()), population);
+        run_ga(rng,
+               opt,
+               xover_op,
+               GlobalUniformMut::new(HYPERCUBE.clone()),
+               population);
     } else if opt.mut_op == "local" {
-        run_ga(rng, opt, xover_op, LocalUniformMut::new(opt.local_range), population);
+        run_ga(rng,
+               opt,
+               xover_op,
+               LocalUniformMut::new(opt.local_range),
+               population);
     } else {
         panic!("Unknown mutation operation");
     }
@@ -285,20 +302,26 @@ fn main() {
     let opt = Opt::from_args();
     let mut rng = get_rng(opt.seed);
     // Generate random population
-    let mut population = gen_rand_pop(|| {
-        loop {
-            let individual = Gene(HYPERCUBE.sample(&mut rng));
-            if opt.constraint_handling != "death" || infeasibility(&individual) == 0 {
-                return individual;
-            }
-        }
-    }, opt.pop_size);
+    let mut population = gen_rand_pop(|| loop {
+                                          let individual = Gene(HYPERCUBE.sample(&mut rng));
+                                          if opt.constraint_handling != "death" ||
+                                             infeasibility(&individual) == 0 {
+                                              return individual;
+                                          }
+                                      },
+                                      opt.pop_size);
     if opt.xover_op == "udnx" {
-        dispatch_mut(&mut rng, &opt, UndxCrossover::new(opt.xi, opt.eta), &mut population);
+        dispatch_mut(&mut rng,
+                     &opt,
+                     UndxCrossover::new(opt.xi, opt.eta),
+                     &mut population);
     } else if opt.xover_op == "linear" {
         dispatch_mut(&mut rng, &opt, LinearCrossover::new(), &mut population);
     } else if opt.xover_op == "blend" {
-        dispatch_mut(&mut rng, &opt, BlendCrossover::new(opt.blend_alpha), &mut population);
+        dispatch_mut(&mut rng,
+                     &opt,
+                     BlendCrossover::new(opt.blend_alpha),
+                     &mut population);
     } else {
         panic!("Unknown xover operation");
     };

@@ -8,9 +8,9 @@ use utils::real::Hypercube;
 use rand::distributions::{Normal, IndependentSample};
 
 pub trait Crossover<D, RG: RealGene<f32, D>>
-        where
-            D: Dim,
-            DefaultAllocator: Allocator<f32, D> {
+    where D: Dim,
+          DefaultAllocator: Allocator<f32, D>
+{
     fn parents(&self) -> u8;
     fn crossover<R: Rng>(&self, rng: &mut R, parents: &[RG]) -> (RG, RG);
 }
@@ -19,11 +19,12 @@ pub trait Crossover<D, RG: RealGene<f32, D>>
 pub struct LinearCrossover();
 
 impl<D, RG: RealGene<f32, D>> Crossover<D, RG> for LinearCrossover
-        where
-            D: Dim,
-            DefaultAllocator: Allocator<f32, D>
+    where D: Dim,
+          DefaultAllocator: Allocator<f32, D>
 {
-    fn parents(&self) -> u8 { 2 }
+    fn parents(&self) -> u8 {
+        2
+    }
 
     fn crossover<R: Rng>(&self, _rng: &mut R, parents: &[RG]) -> (RG, RG) {
         // http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.25.5297
@@ -40,17 +41,9 @@ impl<D, RG: RealGene<f32, D>> Crossover<D, RG> for LinearCrossover
         let c2f = c2g.fitness();
         let c3f = c2g.fitness();
         if c1f > c2f {
-            if c2f > c3f {
-                (c1g, c2g)
-            } else {
-                (c1g, c3g)
-            }
+            if c2f > c3f { (c1g, c2g) } else { (c1g, c3g) }
         } else {
-            if c1f > c3f {
-                (c1g, c2g)
-            } else {
-                (c2g, c3g)
-            }
+            if c1f > c3f { (c1g, c2g) } else { (c2g, c3g) }
         }
     }
 }
@@ -61,21 +54,27 @@ pub struct BlendCrossover {
 }
 
 impl<D, RG: RealGene<f32, D>> Crossover<D, RG> for BlendCrossover
-        where
-            D: Dim,
-            DefaultAllocator: Allocator<f32, D>
+    where D: Dim,
+          DefaultAllocator: Allocator<f32, D>
 {
-    fn parents(&self) -> u8 { 2 }
+    fn parents(&self) -> u8 {
+        2
+    }
 
     fn crossover<R: Rng>(&self, rng: &mut R, parents: &[RG]) -> (RG, RG) {
         // http://heuristic.kaist.ac.kr/cylee/xga/Paper%20Review/Papers/[P6]%20Real-Coded%20Genetic%20Algorithms.pdf
         let mummy_v = parents[0].get_vec();
         let daddy_v = parents[1].get_vec();
 
-        fn mk_child<R, D>(rng: &mut R, alpha: f32, mummy_v: &VectorN<f32, D>, daddy_v: &VectorN<f32, D>) -> VectorN<f32, D>
+        fn mk_child<R, D>(rng: &mut R,
+                          alpha: f32,
+                          mummy_v: &VectorN<f32, D>,
+                          daddy_v: &VectorN<f32, D>)
+                          -> VectorN<f32, D>
             where R: Rng,
                   D: Dim,
-                  DefaultAllocator: Allocator<f32, D>, {
+                  DefaultAllocator: Allocator<f32, D>
+        {
             let u: f32 = rng.gen();
             let gamma = (1.0 + 2.0 * alpha) * u - alpha;
             (1.0 - gamma) * mummy_v + gamma * daddy_v
@@ -94,11 +93,12 @@ pub struct UndxCrossover {
 
 
 impl<D, RG: RealGene<f32, D>> Crossover<D, RG> for UndxCrossover
-        where
-            D: Dim + DimName,
-            DefaultAllocator: Allocator<f32, D>
+    where D: Dim + DimName,
+          DefaultAllocator: Allocator<f32, D>
 {
-    fn parents(&self) -> u8 { 3 }
+    fn parents(&self) -> u8 {
+        3
+    }
 
     fn crossover<R: Rng>(&self, rng: &mut R, parents: &[RG]) -> (RG, RG) {
         // https://pdfs.semanticscholar.org/d486/e294dff024ee600aa7a9b718528ccef532e1.pdf?_ga=2.108420555.853277512.1518964893-1720394428.1516112356&_gac=1.191070936.1518425497.CjwKCAiAk4XUBRB5EiwAHBLUMRdkvVUvd8tx7dT5MDBsj1X0BXp5ZRtj8nwe-UBne64B-cYfoy_OthoCBWYQAvD_BwE
@@ -119,32 +119,38 @@ impl<D, RG: RealGene<f32, D>> Crossover<D, RG> for UndxCrossover
         // [1, 0, 0] again, otherwise we won't end up with a basis. The code below ensures this.
         let mut basis: Vec<_> = d.iter().enumerate().collect();
         basis.sort_unstable_by_key(|&(_i, x)| NotNaN::new(-abs(x)).unwrap());
-        let mut basis: Vec<_> = basis.iter().map(|&(i, _x)| {
-            let vec = VectorN::<f32, D>::from_fn(|r, _| {
-                if r == i {
-                    1.0
-                } else {
-                    0.0
-                }
-            });
-            vec
-        }).collect();
+        let mut basis: Vec<_> = basis
+            .iter()
+            .map(|&(i, _x)| {
+                     let vec = VectorN::<f32, D>::from_fn(|r, _| if r == i { 1.0 } else { 0.0 });
+                     vec
+                 })
+            .collect();
         basis[0] = d.to_owned();
         let _n = FiniteDimInnerSpace::orthonormalize(basis.as_mut_slice());
         // Now generate the two children
         let xi_dist = Normal::new(0.0, self.xi_var.sqrt().into());
         let eta_dist = Normal::new(0.0, self.eta_var.sqrt().into());
 
-        fn mk_child<R, D>(rng: &mut R, x_p: &VectorN<f32, D>, xi_dist: &Normal, d: &VectorN<f32, D>, eta_dist: &Normal, e: &[VectorN<f32, D>], s: f32) -> VectorN<f32, D>
+        fn mk_child<R, D>(rng: &mut R,
+                          x_p: &VectorN<f32, D>,
+                          xi_dist: &Normal,
+                          d: &VectorN<f32, D>,
+                          eta_dist: &Normal,
+                          e: &[VectorN<f32, D>],
+                          s: f32)
+                          -> VectorN<f32, D>
             where R: Rng,
                   D: Dim + DimName,
-                  DefaultAllocator: Allocator<f32, D>, {
+                  DefaultAllocator: Allocator<f32, D>
+        {
             let xi = xi_dist.ind_sample(rng) as f32;
             let primary = x_p + xi * d;
-            let it = e.iter().map(|e_i| {
-                let eta_i = eta_dist.ind_sample(rng) as f32;
-                eta_i * e_i
-            });
+            let it = e.iter()
+                .map(|e_i| {
+                         let eta_i = eta_dist.ind_sample(rng) as f32;
+                         eta_i * e_i
+                     });
             // VectorN::<f32, D>::sum(it)
             let mut summed = VectorN::<f32, D>::zeros();
             for elem in it {
@@ -160,25 +166,26 @@ impl<D, RG: RealGene<f32, D>> Crossover<D, RG> for UndxCrossover
 }
 
 pub trait Mutation<D, RG: RealGene<f32, D>>
-        where
-            D: Dim,
-            DefaultAllocator: Allocator<f32, D> {
+    where D: Dim,
+          DefaultAllocator: Allocator<f32, D>
+{
     fn mutate<R: Rng>(&self, rng: &mut R, parent: &mut RG);
 }
 
 // F: Scalar + Ring + Signed + SampleRange + PartialOrd
 #[derive(new)]
 pub struct GlobalUniformMut<D: DimName>
-        where DefaultAllocator: Allocator<f32, D, U1> {
-    hypercube: Hypercube<f32, D, U1>
+    where DefaultAllocator: Allocator<f32, D, U1>
+{
+    hypercube: Hypercube<f32, D, U1>,
 }
 
 // F: Scalar + Ring + Signed + SampleRange + PartialOrd
 impl<D, RG> Mutation<D, RG> for GlobalUniformMut<D>
-        where
-            D: Dim + DimName,
-            RG: RealGene<f32, D>,
-            DefaultAllocator: Allocator<f32, D> {
+    where D: Dim + DimName,
+          RG: RealGene<f32, D>,
+          DefaultAllocator: Allocator<f32, D>
+{
     fn mutate<X: Rng>(&self, rng: &mut X, parent: &mut RG) {
         let mut_vec = parent.get_mut_vec();
         *mut_vec = self.hypercube.sample(rng);
@@ -191,15 +198,13 @@ pub struct LocalUniformMut {
 }
 
 impl<D, RG> Mutation<D, RG> for LocalUniformMut
-        where
-            D: Dim,
-            RG: RealGene<f32, D>,
-            DefaultAllocator: Allocator<f32, D> {
+    where D: Dim,
+          RG: RealGene<f32, D>,
+          DefaultAllocator: Allocator<f32, D>
+{
     fn mutate<R: Rng>(&self, rng: &mut R, parent: &mut RG) {
         let parent_v = parent.get_mut_vec();
-        *parent_v = parent_v.map(|xn| {
-            xn + rng.gen_range(-0.5 * self.range, 0.5 * self.range)
-        });
+        *parent_v = parent_v.map(|xn| xn + rng.gen_range(-0.5 * self.range, 0.5 * self.range));
     }
 }
 /*

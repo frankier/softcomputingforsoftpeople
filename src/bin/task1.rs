@@ -59,8 +59,8 @@ impl fmt::Display for Gene {
 
 //#[derive(Copy, Clone)]
 //struct Individual {
-    //gene: Gene,
-    //fitness: f32,
+//gene: Gene,
+//fitness: f32,
 //}
 
 fn fixed_to_float(x: u8) -> f32 {
@@ -107,9 +107,7 @@ fn main() {
     let opt = Opt::from_args();
     let mut rng = get_rng(opt.seed);
     // Generate random population
-    let mut population = gen_rand_pop(|| {
-        rng.gen()
-    }, POP_SIZE);
+    let mut population = gen_rand_pop(|| rng.gen(), POP_SIZE);
     let mut breeding_pool = Vec::<Gene>::with_capacity(POOL_SIZE);
     // Iterate
     for gen in 0..50 {
@@ -118,9 +116,12 @@ fn main() {
             print_individuals(population.as_slice());
         }
         // Selection by 2-way tournament
-        select_2way_tournament(
-            &mut rng, &mut breeding_pool, &population,
-            POOL_SIZE, P_S, opt.verbosity);
+        select_2way_tournament(&mut rng,
+                               &mut breeding_pool,
+                               &population,
+                               POOL_SIZE,
+                               P_S,
+                               opt.verbosity);
         // Crossover
         for i in range_step(0, POP_SIZE, 2) {
             let crossover_chance: f32 = rng.gen();

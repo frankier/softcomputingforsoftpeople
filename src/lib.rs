@@ -20,10 +20,10 @@ pub mod operators;
 use individual::*;
 
 pub fn gen_rand_pop<F, S, SS, G>(mut gen: G, size: usize) -> Vec<Individual<S, SS>>
-        where
-            F: PartialOrd + Debug,
-            S: State<Fitness=F>,
-            SS: Stats<Fitness=F>,
-            G: FnMut() -> S {
-    return (0..size).map(|_| { Individual::new(gen()) }).collect();
+    where F: PartialOrd + Debug,
+          S: State<Fitness = F>,
+          SS: Stats<Fitness = F>,
+          G: FnMut() -> S
+{
+    return (0..size).map(|_| Individual::new(gen())).collect();
 }

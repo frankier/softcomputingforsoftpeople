@@ -13,13 +13,14 @@ extern crate structopt_derive;
 extern crate ord_subset;
 
 use structopt::StructOpt;
-use na::{VectorN, Vector2, Vector3, Dim, DimName, DefaultAllocator, U2, U3, U1, distance, DMatrix, abs};
+use na::{VectorN, Vector2, Vector3, Dim, DimName, DefaultAllocator, U2, U3, U1, distance, DMatrix,
+         abs};
 use na::geometry::Point;
 use na::allocator::Allocator;
 use sc::individual::{Stats, Individual, GetFitness, State};
 use ordered_float::NotNaN;
 use std::f32;
-use std::collections::{BinaryHeap};
+use std::collections::BinaryHeap;
 use std::ops::Range;
 use itertools::Itertools;
 use rand::seq::sample_indices;
@@ -52,14 +53,10 @@ impl GetFitness for Gene {
 
     fn fitness(&self) -> Vector2<f32> {
         let x = self.0;
-        let f1 = (0..2).map(|i| {
-            -10.0 * f32::exp(-0.2 * f32::sqrt(
-                x[i] * x[i] +
-                x[i + 1] * x[i + 1]))
-        }).sum();
-        let f2 = (0..3).map(|i| {
-            x[i].powi(2) + 5.0 * x[i]
-        }).sum();
+        let f1 = (0..2)
+            .map(|i| -10.0 * f32::exp(-0.2 * f32::sqrt(x[i] * x[i] + x[i + 1] * x[i + 1])))
+            .sum();
+        let f2 = (0..3).map(|i| x[i].powi(2) + 5.0 * x[i]).sum();
         Vector2::<f32>::new(f1, f2)
     }
 }
@@ -68,27 +65,23 @@ impl State for Gene {}
 
 #[derive(Copy, Clone, Debug)]
 pub struct FitnessesStats<D>
-        where
-            D: Dim + Copy,
-            DefaultAllocator: Allocator<f32, D>,
-            <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>,
+          <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
 {
     pub fitness: VectorN<f32, D>,
 }
 
 impl<D> Stats for FitnessesStats<D>
-        where
-            D: Dim,
-            DefaultAllocator: Allocator<f32, D>,
-            <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim,
+          DefaultAllocator: Allocator<f32, D>,
+          <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
 {
     type Fitness = VectorN<f32, D>;
     type CompetitionFitness = OrdVar<VectorN<f32, D>>;
 
     fn new(fitness: VectorN<f32, D>) -> FitnessesStats<D> {
-        FitnessesStats {
-            fitness,
-        }
+        FitnessesStats { fitness }
     }
 
     fn fitness(&self) -> OrdVar<VectorN<f32, D>> {
@@ -97,34 +90,33 @@ impl<D> Stats for FitnessesStats<D>
 }
 
 trait Scalarizer<D>
-    where
-        D: Dim + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>
 {
     fn scalarize(&self, fitness: &VectorN<f32, D>, lambda: &VectorN<f32, D>) -> f32;
 }
 
 #[derive(new)]
 struct TchebycheffScalarizer<D>
-    where
-        D: Dim + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D> //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
 {
     z_star: VectorN<f32, D>,
 }
 
 impl<D> Scalarizer<D> for TchebycheffScalarizer<D>
-    where
-        D: Dim + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>
 {
     fn scalarize(&self, fitness: &VectorN<f32, D>, lambda: &VectorN<f32, D>) -> f32 {
-        fitness.iter().zip(lambda.iter()).zip(self.z_star.iter()).map(|((f, l), z)| {
-            NotNaN::new(l * abs(&(f - z))).unwrap()
-        }).max().unwrap().into_inner()
+        fitness
+            .iter()
+            .zip(lambda.iter())
+            .zip(self.z_star.iter())
+            .map(|((f, l), z)| NotNaN::new(l * abs(&(f - z))).unwrap())
+            .max()
+            .unwrap()
+            .into_inner()
     }
 }
 
@@ -132,15 +124,15 @@ impl<D> Scalarizer<D> for TchebycheffScalarizer<D>
 struct WeightedSumScalarizer();
 
 impl<D> Scalarizer<D> for WeightedSumScalarizer
-    where
-        D: Dim + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>
 {
     fn scalarize(&self, fitness: &VectorN<f32, D>, lambda: &VectorN<f32, D>) -> f32 {
-        fitness.iter().zip(lambda.iter()).map(|(f, l)| {
-            l * f
-        }).sum()
+        fitness
+            .iter()
+            .zip(lambda.iter())
+            .map(|(f, l)| l * f)
+            .sum()
     }
 }
 
@@ -151,17 +143,19 @@ type T4bIndividual = Individual<Gene, FitnessesStats<U2>>;
 // http://www.cs.cmu.edu/~nasmith/papers/smith+tromble.tr04.pdf
 // and literature on n-dimensional space filling curves
 trait WeightVector<'a, D>
-    where
-        D: Dim + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>
 {
-    type NeighborIterator: Iterator<Item=usize>;
-    type RandNeighborIterator: Iterator<Item=usize>;
+    type NeighborIterator: Iterator<Item = usize>;
+    type RandNeighborIterator: Iterator<Item = usize>;
 
     fn neighbors(&'a self, from: usize) -> Self::NeighborIterator;
 
-    fn rand_neighbors<R: Rng>(&'a self, rng: &mut R, from: usize, select: usize) -> Self::RandNeighborIterator;
+    fn rand_neighbors<R: Rng>(&'a self,
+                              rng: &mut R,
+                              from: usize,
+                              select: usize)
+                              -> Self::RandNeighborIterator;
 
     fn get_lambda(&self) -> &[VectorN<f32, D>];
 }
@@ -176,23 +170,20 @@ impl UniformWeightVector2D {
         assert!(t <= num);
         let n = num as f32;
         let n1 = n - 1.0;
-        let lambda: Vec<_> = (0..num).into_iter().map(|i| {
-            let i_f = i as f32;
-            Vector2::new(i_f / n1, (n - i_f) / n1)
-        }).collect();
+        let lambda: Vec<_> = (0..num)
+            .into_iter()
+            .map(|i| {
+                     let i_f = i as f32;
+                     Vector2::new(i_f / n1, (n - i_f) / n1)
+                 })
+            .collect();
 
-        UniformWeightVector2D {
-            t, lambda
-        }
+        UniformWeightVector2D { t, lambda }
     }
 
     fn neighbor_bounds(from: usize, t: usize, len: usize) -> (usize, usize) {
         let ht = t / 2;
-        let start = if ht > from {
-            0
-        } else {
-            from - ht
-        };
+        let start = if ht > from { 0 } else { from - ht };
         if start + t <= len {
             (start, (start + t))
         } else {
@@ -203,18 +194,24 @@ impl UniformWeightVector2D {
 
 impl<'a> WeightVector<'a, U2> for UniformWeightVector2D {
     type NeighborIterator = Range<usize>;
-    type RandNeighborIterator = Box<Iterator<Item=usize>>;
+    type RandNeighborIterator = Box<Iterator<Item = usize>>;
 
     fn neighbors(&'a self, from: usize) -> Self::NeighborIterator {
-        let (start, end) = UniformWeightVector2D::neighbor_bounds(from, self.t as usize, self.lambda.len());
+        let (start, end) =
+            UniformWeightVector2D::neighbor_bounds(from, self.t as usize, self.lambda.len());
         start..end
     }
 
-    fn rand_neighbors<R: Rng>(&'a self, rng: &mut R, from: usize, select: usize) -> Self::RandNeighborIterator {
-        let (start, end) = UniformWeightVector2D::neighbor_bounds(from, self.t as usize, self.lambda.len());
-        Box::new(sample_indices(rng, end - start, select).into_iter().map(move |idx| {
-            start + idx
-        }))
+    fn rand_neighbors<R: Rng>(&'a self,
+                              rng: &mut R,
+                              from: usize,
+                              select: usize)
+                              -> Self::RandNeighborIterator {
+        let (start, end) =
+            UniformWeightVector2D::neighbor_bounds(from, self.t as usize, self.lambda.len());
+        Box::new(sample_indices(rng, end - start, select)
+                     .into_iter()
+                     .map(move |idx| start + idx))
     }
 
     fn get_lambda(&self) -> &[VectorN<f32, U2>] {
@@ -223,10 +220,8 @@ impl<'a> WeightVector<'a, U2> for UniformWeightVector2D {
 }
 
 struct ChosenWeightVector<D>
-    where
-        D: Dim + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D> //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
 {
     lambda: Vec<VectorN<f32, D>>,
     t: usize,
@@ -235,23 +230,21 @@ struct ChosenWeightVector<D>
 }
 
 impl<D> ChosenWeightVector<D>
-    where
-        D: Dim + DimName + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + DimName + Copy,
+          DefaultAllocator: Allocator<f32, D>
 {
     fn new(lambda: Vec<VectorN<f32, D>>, t: usize) -> ChosenWeightVector<D> {
         assert!(t >= 1);
         assert!(t <= lambda.len());
 
-        // Matrix is column major, so neighbors should be 
+        // Matrix is column major, so neighbors should be
         let mut b = DMatrix::<usize>::from_element(t, lambda.len(), 0);
         let mut heap = BinaryHeap::with_capacity(t);
         for (i, l1) in lambda.iter().enumerate() {
             for (j, l2) in lambda.iter().enumerate() {
-                let d = NotNaN::new(distance(
-                    &Point::<f32, D>::from_coordinates(l1.clone()),
-                    &Point::<f32, D>::from_coordinates(l2.clone()))).unwrap();
+                let d = NotNaN::new(distance(&Point::<f32, D>::from_coordinates(l1.clone()),
+                                             &Point::<f32, D>::from_coordinates(l2.clone())))
+                        .unwrap();
                 if heap.len() < t {
                     heap.push((d, j));
                 } else if d < heap.peek().unwrap().0 {
@@ -263,35 +256,35 @@ impl<D> ChosenWeightVector<D>
             }
         }
 
-        ChosenWeightVector {
-            t, lambda, b
-        }
+        ChosenWeightVector { t, lambda, b }
     }
 }
 
 impl<'a, D> WeightVector<'a, D> for ChosenWeightVector<D>
-    where
-        D: Dim + Copy,
-        DefaultAllocator: Allocator<f32, D>,
-        //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>
 {
     // XXX: impl trait
-    type NeighborIterator = Box<Iterator<Item=usize> + 'a>;
-    type RandNeighborIterator = Box<Iterator<Item=usize> + 'a>;
+    type NeighborIterator = Box<Iterator<Item = usize> + 'a>;
+    type RandNeighborIterator = Box<Iterator<Item = usize> + 'a>;
 
     fn neighbors(&'a self, from: usize) -> Self::NeighborIterator {
         // XXX: column doesn't work because it is not guaranteed to produce a contiguous slice --
         // still, hopefully there will possibly be a neater way to do this in future
         let start = from * self.t;
-        Box::new(self.b.as_slice()[start..(start + self.t)].iter().map(|&n| n))
+        Box::new(self.b.as_slice()[start..(start + self.t)]
+                     .iter()
+                     .map(|&n| n))
     }
 
-    fn rand_neighbors<R: Rng>(&'a self, rng: &mut R, from: usize, select: usize)
-            -> Self::RandNeighborIterator
-    {
-        Box::new(sample_indices(rng, self.t, select).into_iter().map(move |idx| {
-            self.b[(from, idx)]
-        }))
+    fn rand_neighbors<R: Rng>(&'a self,
+                              rng: &mut R,
+                              from: usize,
+                              select: usize)
+                              -> Self::RandNeighborIterator {
+        Box::new(sample_indices(rng, self.t, select)
+                     .into_iter()
+                     .map(move |idx| self.b[(from, idx)]))
     }
 
     fn get_lambda(&self) -> &[VectorN<f32, D>] {
@@ -299,8 +292,9 @@ impl<'a, D> WeightVector<'a, D> for ChosenWeightVector<D>
     }
 }
 
-fn print_fitnesses<S: Scalarizer<U2>>(
-        scalarizer: S, individuals: &[T4bIndividual], lambda: &[VectorN<f32, U2>]) {
+fn print_fitnesses<S: Scalarizer<U2>>(scalarizer: S,
+                                      individuals: &[T4bIndividual],
+                                      lambda: &[VectorN<f32, U2>]) {
     for (idx, (individual, l_i)) in individuals.iter().zip(lambda).enumerate() {
         let scalarized = scalarizer.scalarize(&individual.stats.fitness, l_i);
         println!("#{}: {}", idx + 1, scalarized);
@@ -329,9 +323,10 @@ fn moead_next_gen<'a, R, G, CX, H, SolD, FitD, S, WV>(
         WV: WeightVector<'a, FitD>
 {
     for idx in 0..individuals.len() {
-        let parents: Vec<_> = weight_vec.rand_neighbors(rng, idx, xover.parents() as usize).map(|idx| {
-            individuals[idx].state
-        }).collect();
+        let parents: Vec<_> = weight_vec
+            .rand_neighbors(rng, idx, xover.parents() as usize)
+            .map(|idx| individuals[idx].state)
+            .collect();
         // Reproduction
         let mut child_gene = {
             let children_genes = xover.crossover(rng, parents.as_slice());
@@ -397,7 +392,7 @@ lazy_static! {
 }
 
 fn dispatch_xover<R: Rng, S: Scalarizer<U2>, H: Fn(&mut Gene) + Sized>(
-        opt: &Opt, 
+        opt: &Opt,
         rng: &mut R,
         apply_heuristic: &H,
         scalarizer: &S,
@@ -406,28 +401,42 @@ fn dispatch_xover<R: Rng, S: Scalarizer<U2>, H: Fn(&mut Gene) + Sized>(
         z_star: &mut VectorN<f32, U2>)
 {
     if opt.xover_op == "udnx" {
-        moead_next_gen(
-            rng, UndxCrossover::new(opt.xi, opt.eta), &apply_heuristic,
-            scalarizer, individuals, weight_vec, z_star);
+        moead_next_gen(rng,
+                       UndxCrossover::new(opt.xi, opt.eta),
+                       &apply_heuristic,
+                       scalarizer,
+                       individuals,
+                       weight_vec,
+                       z_star);
     } else if opt.xover_op == "linear" {
-        moead_next_gen(
-            rng, LinearCrossover::new(), &apply_heuristic,
-            scalarizer, individuals, weight_vec, z_star);
+        moead_next_gen(rng,
+                       LinearCrossover::new(),
+                       &apply_heuristic,
+                       scalarizer,
+                       individuals,
+                       weight_vec,
+                       z_star);
     } else if opt.xover_op == "blend" {
-        moead_next_gen(
-            rng, BlendCrossover::new(opt.blend_alpha), &apply_heuristic,
-            scalarizer, individuals, weight_vec, z_star);
+        moead_next_gen(rng,
+                       BlendCrossover::new(opt.blend_alpha),
+                       &apply_heuristic,
+                       scalarizer,
+                       individuals,
+                       weight_vec,
+                       z_star);
     } else {
         panic!("Unknown xover operation");
     }
     println!("New z_star: ({}, {})", z_star.x, z_star.y);
     for (idx, ind) in individuals.iter().enumerate() {
-        println!(
-            "#{} solution: ({}, {}, {}) fitnesses: ({}, {}) scalarized (prev z): {}",
-            idx,
-            ind.state.0.x, ind.state.0.y, ind.state.0.z,
-            ind.stats.fitness.x, ind.stats.fitness.y,
-            scalarizer.scalarize(&ind.stats.fitness, &weight_vec.get_lambda()[idx]));
+        println!("#{} solution: ({}, {}, {}) fitnesses: ({}, {}) scalarized (prev z): {}",
+                 idx,
+                 ind.state.0.x,
+                 ind.state.0.y,
+                 ind.state.0.z,
+                 ind.stats.fitness.x,
+                 ind.stats.fitness.y,
+                 scalarizer.scalarize(&ind.stats.fitness, &weight_vec.get_lambda()[idx]));
     }
 }
 
@@ -437,55 +446,65 @@ fn main() {
     let mut rng = get_rng(opt.seed);
 
     // Init
-    let individuals_x = [
-        (-1.0074,-3.0188,4.8305),
-        (0.2688,-0.1031,-1.9855),
-        (-0.8320,-1.6051,2.0110),
-        (1.5686,4.5163,1.6634),
-        (1.2797,4.2033,0.3913),
-        (-2.0802,-4.4732,1.9811),
-        (-0.6835,2.3786,1.6653),
-        (-4.8451,-2.3088,-3.2187),
-        (4.8406,-0.7716,-3.7199),
-        (-3.3283,0.4787,4.9908),
-        (-3.9378,4.4274,-3.2888),
-        (-1.2759,-0.8226,-4.6740),
-    ];
+    let individuals_x = [(-1.0074, -3.0188, 4.8305),
+                         (0.2688, -0.1031, -1.9855),
+                         (-0.8320, -1.6051, 2.0110),
+                         (1.5686, 4.5163, 1.6634),
+                         (1.2797, 4.2033, 0.3913),
+                         (-2.0802, -4.4732, 1.9811),
+                         (-0.6835, 2.3786, 1.6653),
+                         (-4.8451, -2.3088, -3.2187),
+                         (4.8406, -0.7716, -3.7199),
+                         (-3.3283, 0.4787, 4.9908),
+                         (-3.9378, 4.4274, -3.2888),
+                         (-1.2759, -0.8226, -4.6740)];
     let weight_vec = UniformWeightVector2D::new(12, 4);
     let z_star = Vector2::<f32>::new(-20.0, -12.0);
-    
-    let individuals: Vec<_> = individuals_x.into_iter().map(|&(x, y, z)| {
-        T4bIndividual::new(Gene(Vector3::<f32>::new(x, y, z)))
-    }).collect();
+
+    let individuals: Vec<_> = individuals_x
+        .into_iter()
+        .map(|&(x, y, z)| T4bIndividual::new(Gene(Vector3::<f32>::new(x, y, z))))
+        .collect();
 
     // Print 4 nearest neighbors of each individual
     println!("Nearest neighbors according to weight vectors");
     for idx in 0..individuals.len() {
-        println!("#{}: {}", idx + 1,
-                 weight_vec.neighbors(idx).map(|n| { n + 1 }).join("; "));
+        println!("#{}: {}",
+                 idx + 1,
+                 weight_vec.neighbors(idx).map(|n| n + 1).join("; "));
     }
 
     // Evaluate initial fitness of individuals
     println!("\nTchebycheff fitnesses");
-    print_fitnesses(TchebycheffScalarizer::new(z_star), individuals.as_slice(), weight_vec.get_lambda());
+    print_fitnesses(TchebycheffScalarizer::new(z_star),
+                    individuals.as_slice(),
+                    weight_vec.get_lambda());
     println!("\nWeighted sum fitnesses");
-    print_fitnesses(WeightedSumScalarizer::new(), individuals.as_slice(), weight_vec.get_lambda());
-    
+    print_fitnesses(WeightedSumScalarizer::new(),
+                    individuals.as_slice(),
+                    weight_vec.get_lambda());
+
     // Get next generation
-    let clamp_solution = |gene: &mut Gene| {
-        (*gene).0 = HYPERCUBE.clamp(&gene.0);
-    };
+    let clamp_solution = |gene: &mut Gene| { (*gene).0 = HYPERCUBE.clamp(&gene.0); };
     println!("\nTchebycheff next generation");
     let mut tchebycheff_individuals = individuals.clone();
     let mut tchebycheff_z_star = z_star.clone();
-    dispatch_xover(
-        &opt, &mut rng, &clamp_solution, &TchebycheffScalarizer::new(z_star),
-        tchebycheff_individuals.as_mut_slice(), &weight_vec, &mut tchebycheff_z_star);
+    dispatch_xover(&opt,
+                   &mut rng,
+                   &clamp_solution,
+                   &TchebycheffScalarizer::new(z_star),
+                   tchebycheff_individuals.as_mut_slice(),
+                   &weight_vec,
+                   &mut tchebycheff_z_star);
 
     println!("\nWeighted sum next generation");
     let mut weight_sum_individuals = individuals.clone();
     let mut weight_sum_z_star = z_star.clone();
-    dispatch_xover(
-        &opt, &mut rng, &clamp_solution, &WeightedSumScalarizer::new(),
-        weight_sum_individuals.as_mut_slice(), &weight_vec, &mut weight_sum_z_star);
+    dispatch_xover(&opt,
+                   &mut rng,
+                   &clamp_solution,
+                   &WeightedSumScalarizer::new(),
+                   weight_sum_individuals.as_mut_slice(),
+                   &weight_vec,
+                   &mut weight_sum_z_star);
 }

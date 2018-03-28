@@ -34,11 +34,8 @@ struct State {
 
 
 impl State {
-    fn rand<G: Rng>(rng: &mut G, hypercube: &Hypercube<f32, U2, U1>, v_max: f32) -> State
-    {
-        let v_rand: Vector2<f32> = Vector2::<f32>::from_fn(|_x, _y| {
-            rng.gen_range(-1.0, 1.0)
-        });
+    fn rand<G: Rng>(rng: &mut G, hypercube: &Hypercube<f32, U2, U1>, v_max: f32) -> State {
+        let v_rand: Vector2<f32> = Vector2::<f32>::from_fn(|_x, _y| rng.gen_range(-1.0, 1.0));
         let v_unit = v_rand.normalize();
         let v_mag = rng.gen_range(0.0, v_max);
         State {
@@ -73,7 +70,8 @@ impl GetFitness for State {
     type Fitness = f32;
 
     fn fitness(&self) -> f32 {
-        f32::cos(self.position[0]) * f32::sin(self.position[1]) - self.position[0] / (self.position[1] * self.position[1] + 1.0)
+        f32::cos(self.position[0]) * f32::sin(self.position[1]) -
+        self.position[0] / (self.position[1] * self.position[1] + 1.0)
     }
 }
 
@@ -91,7 +89,10 @@ impl PSOBest {
     }
 
     fn new_invalid() -> PSOBest {
-        PSOBest { position: Vector2::new(f32::NAN, f32::NAN), fitness: f32::INFINITY }
+        PSOBest {
+            position: Vector2::new(f32::NAN, f32::NAN),
+            fitness: f32::INFINITY,
+        }
     }
 }
 
@@ -108,7 +109,10 @@ impl Stats for PSOStats {
     fn new(fitness: f32) -> PSOStats {
         PSOStats {
             fitness,
-            pbest: PSOBest { position: Vector2::new(f32::NAN, f32::NAN), fitness: f32::INFINITY }
+            pbest: PSOBest {
+                position: Vector2::new(f32::NAN, f32::NAN),
+                fitness: f32::INFINITY,
+            },
         }
     }
 
@@ -121,7 +125,11 @@ type PSOIndividual = Individual<State, PSOStats>;
 
 fn print_individuals(individuals: &[PSOIndividual]) {
     for (idx, ind) in individuals.iter().enumerate() {
-        println!("#{} {} fitness: {} best: {}", idx, ind.state, ind.stats.fitness, ind.stats.pbest);
+        println!("#{} {} fitness: {} best: {}",
+                 idx,
+                 ind.state,
+                 ind.stats.fitness,
+                 ind.stats.pbest);
     }
 }
 
@@ -132,11 +140,11 @@ trait Neighborhood {
 }
 
 struct GlobalNeighborhood {
-    best: PSOBest
+    best: PSOBest,
 }
 
 struct RingNeighborhood {
-    bests: Vec<PSOBest>
+    bests: Vec<PSOBest>,
 }
 
 impl Neighborhood for GlobalNeighborhood {
@@ -159,9 +167,7 @@ impl Neighborhood for GlobalNeighborhood {
 
 impl GlobalNeighborhood {
     fn new() -> GlobalNeighborhood {
-        GlobalNeighborhood {
-            best: PSOBest::new_invalid()
-        }
+        GlobalNeighborhood { best: PSOBest::new_invalid() }
     }
 }
 
@@ -190,20 +196,17 @@ impl Neighborhood for RingNeighborhood {
     }
 
     fn overall_best(&self) -> &PSOBest {
-        self.bests.iter().max_by_key(|best| {
-            NotNaN::new(-best.fitness).unwrap()
-        }).unwrap()
+        self.bests
+            .iter()
+            .max_by_key(|best| NotNaN::new(-best.fitness).unwrap())
+            .unwrap()
     }
 }
 
 impl RingNeighborhood {
     fn new(pop_size: usize) -> RingNeighborhood {
         assert!(pop_size >= 1);
-        RingNeighborhood {
-            bests: (0..pop_size).map(|_| {
-                PSOBest::new_invalid()
-            }).collect()
-        }
+        RingNeighborhood { bests: (0..pop_size).map(|_| PSOBest::new_invalid()).collect() }
     }
 }
 
@@ -216,11 +219,10 @@ struct PSOOpt {
     v_max: f32,
 }
 
-fn pso<G: Rng, N: Neighborhood>(
-        rng: &mut G,
-        population: &mut [PSOIndividual],
-        neighborhood: &mut N,
-        opt: &PSOOpt) {
+fn pso<G: Rng, N: Neighborhood>(rng: &mut G,
+                                population: &mut [PSOIndividual],
+                                neighborhood: &mut N,
+                                opt: &PSOOpt) {
     // Iterate
     for gen in 0..opt.generations {
         if opt.verbosity >= 1 {
@@ -249,7 +251,8 @@ fn pso<G: Rng, N: Neighborhood>(
                 let nbest = neighborhood.get_best(idx);
                 let gvec = HYPERCUBE.go_nearest_torus(position, &nbest.position);
                 //println!("Velocity before {:?} pvec: {:?} gvec: {:?}", velocity, pvec, gvec);
-                *velocity = opt.inertia * *velocity + opt.cognitive * rng.next_f32() * pvec + opt.social * rng.next_f32() * gvec;
+                *velocity = opt.inertia * *velocity + opt.cognitive * rng.next_f32() * pvec +
+                            opt.social * rng.next_f32() * gvec;
                 //println!("Velocity after {:?}", velocity);
                 // Rescale to VMAX if neccesary
                 let vmag = norm(velocity);
@@ -358,11 +361,17 @@ fn main() {
     let overall_best;
     if opt.ring {
         let mut neighborhood: RingNeighborhood = RingNeighborhood::new(opt.pop_size);
-        pso(&mut rng, population.as_mut_slice(), &mut neighborhood, &pso_opt);
+        pso(&mut rng,
+            population.as_mut_slice(),
+            &mut neighborhood,
+            &pso_opt);
         overall_best = neighborhood.overall_best().clone();
     } else {
         let mut neighborhood = GlobalNeighborhood::new();
-        pso(&mut rng, population.as_mut_slice(), &mut neighborhood, &pso_opt);
+        pso(&mut rng,
+            population.as_mut_slice(),
+            &mut neighborhood,
+            &pso_opt);
         overall_best = neighborhood.overall_best().clone();
     }
     println!("Final results");
@@ -376,10 +385,15 @@ fn main() {
         // records are written.
         wtr.write_record(&["x1", "x2", "type"]).unwrap();
         for individual in population.iter() {
-            wtr.serialize((individual.state.position[0], individual.state.position[1], 0)).unwrap();
-            wtr.serialize((individual.stats.pbest.position[0], individual.stats.pbest.position[1], 1)).unwrap();
+            wtr.serialize((individual.state.position[0], individual.state.position[1], 0))
+                .unwrap();
+            wtr.serialize((individual.stats.pbest.position[0],
+                            individual.stats.pbest.position[1],
+                            1))
+                .unwrap();
         }
-        wtr.serialize((overall_best.position[0], overall_best.position[1], 2)).unwrap();
+        wtr.serialize((overall_best.position[0], overall_best.position[1], 2))
+            .unwrap();
 
         // A CSV writer maintains an internal buffer, so it's important
         // to flush the buffer when you're done.

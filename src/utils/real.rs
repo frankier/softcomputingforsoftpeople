@@ -9,38 +9,47 @@ use rand::Rng;
 
 #[derive(Clone)]
 pub struct Hypercube<N: Scalar + Ring + Signed + SampleRange + PartialOrd, R: DimName, C: DimName>
-        where DefaultAllocator: Allocator<N, R, C>
+    where DefaultAllocator: Allocator<N, R, C>
 {
     min: MatrixMN<N, R, C>,
     max: MatrixMN<N, R, C>,
     range: MatrixMN<N, R, C>,
 }
 
-impl<N: Scalar + Ring + Signed + SampleRange + PartialOrd, R: DimName, C: DimName> Hypercube<N, R, C>
-        where DefaultAllocator: Allocator<N, R, C>
+impl<N: Scalar + Ring + Signed + SampleRange + PartialOrd, R: DimName, C: DimName> Hypercube<N,
+                                                                                             R,
+                                                                                             C>
+    where DefaultAllocator: Allocator<N, R, C>
 {
     pub fn new(min: MatrixMN<N, R, C>, max: MatrixMN<N, R, C>) -> Hypercube<N, R, C> {
         assert!(min < max);
         let range = &max - &min;
-        Hypercube { min, max, range: range }
+        Hypercube {
+            min,
+            max,
+            range: range,
+        }
     }
 
     pub fn sample<G: Rng>(&self, rng: &mut G) -> MatrixMN<N, R, C>
         where DefaultAllocator: Allocator<N, R, C>
     {
-        self.min.zip_map(&self.max, |min_e, max_e| {
-            rng.gen_range(min_e, max_e)
-        })
+        self.min
+            .zip_map(&self.max, |min_e, max_e| rng.gen_range(min_e, max_e))
     }
 
     //pub fn map
     //pub fn zip_map
 
-    pub fn go_nearest_torus(&self, from: &MatrixMN<N, R, C>, to: &MatrixMN<N, R, C>) -> MatrixMN<N, R, C> {
+    pub fn go_nearest_torus(&self,
+                            from: &MatrixMN<N, R, C>,
+                            to: &MatrixMN<N, R, C>)
+                            -> MatrixMN<N, R, C> {
         // That the nearest point will be the nearest in each dimension follows for any normed
         // vector space. This follows from the triangle inequality.
-        let dir = MatrixMN::<N, R, C>::from_iterator(
-            izip!(from.iter(), to.iter(), self.range.iter()).map(|(fd, td, rd)| {
+        let dir =
+            MatrixMN::<N, R, C>::from_iterator(izip!(from.iter(), to.iter(), self.range.iter())
+                                                   .map(|(fd, td, rd)| {
                 // Imagine hypercube boundaries at | and fd could be in either of
                 // two positions:
                 // td   |fd td fd|   td
@@ -61,26 +70,21 @@ impl<N: Scalar + Ring + Signed + SampleRange + PartialOrd, R: DimName, C: DimNam
                 } else {
                     towards_other_td
                 }
-            })
-        );
+            }));
         //println!("from {:?} to {:?} is nearest at {:?} dir is {:?}", from, to, from + &dir, &dir);
         //nearest - from
         dir
     }
 
     pub fn place_torus(&self, point: &MatrixMN<N, R, C>) -> MatrixMN<N, R, C> {
-        MatrixMN::<N, R, C>::from_iterator(
-            izip!(point.iter(), self.min.iter(), self.max.iter()).map(|(pd, mind, maxd)| {
-                wrap(*pd, *mind, *maxd)
-            })
-        )
+        MatrixMN::<N, R, C>::from_iterator(izip!(point.iter(), self.min.iter(), self.max.iter())
+                                               .map(|(pd, mind, maxd)| wrap(*pd, *mind, *maxd)))
     }
 
     pub fn clamp(&self, point: &MatrixMN<N, R, C>) -> MatrixMN<N, R, C> {
-        MatrixMN::<N, R, C>::from_iterator(
-            izip!(point.iter(), self.min.iter(), self.max.iter()).map(|(pd, mind, maxd)| {
-                clamp(*pd, *mind, *maxd)
-            })
-        )
+        MatrixMN::<N, R, C>::from_iterator(izip!(point.iter(), self.min.iter(), self.max.iter())
+                                               .map(|(pd, mind, maxd)| {
+                                                        clamp(*pd, *mind, *maxd)
+                                                    }))
     }
 }

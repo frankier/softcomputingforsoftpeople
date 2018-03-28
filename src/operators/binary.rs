@@ -2,7 +2,7 @@ use rand::Rng;
 //use std::mem::transmute;
 use safe_transmute::{PodTransmutable, guarded_transmute_to_mut_bytes_pod};
 use bitwise::SetBitsGeq;
-// guarded_transmute_to_bytes_pod, 
+// guarded_transmute_to_bytes_pod,
 
 
 /*fn gene_bits(gene: Gene) -> u16 {

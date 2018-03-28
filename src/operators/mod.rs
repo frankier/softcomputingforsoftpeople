@@ -6,18 +6,17 @@ use rand::Rng;
 use rand::seq::sample_slice;
 use std::fmt::Debug;
 
-pub fn select_2way_tournament<R, S, SS, F>(
-        mut rng: &mut R,
-        breeding_pool: &mut Vec<S>,
-        population: &[Individual<S, SS>],
-        pool_size: usize,
-        prob_select: f32,
-        verbosity: u64)
-            where
-                R: Rng,
-                F: PartialOrd + Debug,
-                S: State<Fitness=F> + Clone,
-                SS: Stats<Fitness=F> {
+pub fn select_2way_tournament<R, S, SS, F>(mut rng: &mut R,
+                                           breeding_pool: &mut Vec<S>,
+                                           population: &[Individual<S, SS>],
+                                           pool_size: usize,
+                                           prob_select: f32,
+                                           verbosity: u64)
+    where R: Rng,
+          F: PartialOrd + Debug,
+          S: State<Fitness = F> + Clone,
+          SS: Stats<Fitness = F>
+{
     breeding_pool.clear();
     for i in 0..pool_size {
         let mut competitors = sample_slice(&mut rng, &population, 2);

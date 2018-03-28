@@ -27,9 +27,10 @@ pub struct Individual<S: State, SS: Stats> {
 }
 
 impl<F, S, SS> Individual<S, SS>
-        where F: PartialOrd + Debug,
-              S: State<Fitness=F>,
-              SS: Stats<Fitness=F> {
+    where F: PartialOrd + Debug,
+          S: State<Fitness = F>,
+          SS: Stats<Fitness = F>
+{
     pub fn new(state: S) -> Individual<S, SS> {
         let stats = SS::new(state.fitness());
         Individual { state, stats }
@@ -46,9 +47,7 @@ impl Stats for OnlyFitnessStats {
     type CompetitionFitness = NotNaN<f32>;
 
     fn new(fitness: f32) -> OnlyFitnessStats {
-        OnlyFitnessStats {
-            fitness
-        }
+        OnlyFitnessStats { fitness }
     }
 
     fn fitness(&self) -> NotNaN<f32> {
@@ -63,7 +62,7 @@ pub mod real {
     pub trait RealGene<N, D>: ::State + Sized
         where N: Real,
               D: Dim,
-              DefaultAllocator: Allocator<N, D>,
+              DefaultAllocator: Allocator<N, D>
     {
         fn from_vec(VectorN<N, D>) -> Self;
         fn get_vec(&self) -> &VectorN<N, D>;
