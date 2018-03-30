@@ -1,5 +1,7 @@
 pub mod real;
 pub mod binary;
+pub mod order;
+pub mod utils;
 
 use individual::{Stats, Individual, State};
 use rand::Rng;
@@ -33,13 +35,13 @@ pub fn select_2way_tournament<R, S, SS, F>(mut rng: &mut R,
                                    println!("{:?} wins due to higher fitness",
                                             competitors[0].state);
                                }
-                               competitors[1].state
+                               competitors[1].state.clone()
                            } else {
                                if verbosity >= 2 {
                                    println!("{:?} wins despite lower fitness",
                                             competitors[1].state);
                                }
-                               competitors[0].state
+                               competitors[0].state.clone()
                            });
     }
 }

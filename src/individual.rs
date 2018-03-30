@@ -1,5 +1,3 @@
-extern crate ordered_float;
-
 use ordered_float::NotNaN;
 use std::fmt::Debug;
 
@@ -9,7 +7,7 @@ pub trait GetFitness {
     fn fitness(&self) -> Self::Fitness;
 }
 
-pub trait State: GetFitness + Copy + Clone + Debug {}
+pub trait State: GetFitness + Clone + Debug {}
 
 pub trait Stats: Copy + Clone {
     type Fitness: PartialOrd + Debug;
@@ -67,6 +65,28 @@ pub mod real {
         fn from_vec(VectorN<N, D>) -> Self;
         fn get_vec(&self) -> &VectorN<N, D>;
         fn get_mut_vec(&mut self) -> &mut VectorN<N, D>;
+    }
+}
+
+pub mod order {
+    use indexmap::IndexSet;
+
+    pub trait OrderGene<N>: ::State + Sized {
+        fn from_order(IndexSet<N>) -> Self;
+        fn get_order(&self) -> &IndexSet<N>;
+        fn get_mut_order(&mut self) -> &mut IndexSet<N>;
+    }
+}
+
+pub mod multiobj {
+    use na::{VectorN, Dim, DefaultAllocator};
+    use na::allocator::Allocator;
+
+    pub trait MultipleFitnessStats<D>
+        where D: Dim,
+              DefaultAllocator: Allocator<f32, D>,
+              <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy {
+        fn fitnesses(&self) -> &VectorN<f32, D>;
     }
 }
 

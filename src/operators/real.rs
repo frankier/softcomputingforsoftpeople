@@ -7,8 +7,9 @@ use alga::linear::FiniteDimInnerSpace;
 use utils::real::Hypercube;
 use rand::distributions::{Normal, IndependentSample};
 
-pub trait Crossover<D, RG: RealGene<f32, D>>
-    where D: Dim,
+pub trait Crossover<D, RG>
+    where RG: RealGene<f32, D>,
+          D: Dim,
           DefaultAllocator: Allocator<f32, D>
 {
     fn parents(&self) -> u8;
