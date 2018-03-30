@@ -2,8 +2,6 @@ extern crate softcomputingforsoftpeople as sc;
 extern crate ordered_float;
 extern crate nalgebra as na;
 extern crate itertools;
-#[macro_use]
-extern crate derive_new;
 extern crate rand;
 #[macro_use]
 extern crate lazy_static;
@@ -13,24 +11,19 @@ extern crate structopt_derive;
 extern crate ord_subset;
 
 use structopt::StructOpt;
-use na::{VectorN, Vector2, Vector3, Dim, DimName, DefaultAllocator, U2, U3, U1, distance, DMatrix,
-         abs};
-use na::geometry::Point;
+use na::{VectorN, Vector2, Vector3, Dim, DefaultAllocator, U2, U3, U1};
 use na::allocator::Allocator;
 use sc::individual::{Stats, Individual, GetFitness, State};
-use ordered_float::NotNaN;
 use std::f32;
-use std::collections::BinaryHeap;
-use std::ops::Range;
 use itertools::Itertools;
-use rand::seq::sample_indices;
 use rand::Rng;
-use sc::operators::real::{Crossover, UndxCrossover, LinearCrossover, BlendCrossover};
+use sc::operators::real::{UndxCrossover, LinearCrossover, BlendCrossover};
 use sc::individual::real::RealGene;
 use sc::individual::multiobj::MultipleFitnessStats;
 use sc::utils::real::Hypercube;
 use sc::utils::rand::{parse_seed, get_rng};
-use sc::algorithms::moead::{moead_next_gen_real, Scalarizer, TchebycheffScalarizer, WeightedSumScalarizer, UniformWeightVector2D, WeightVector};
+use sc::scalarize::{Scalarizer, TchebycheffScalarizer, WeightedSumScalarizer, UniformWeightVector2D, WeightVector};
+use sc::algorithms::moead::{moead_next_gen_real};
 use ord_subset::OrdVar;
 
 #[derive(Copy, Clone, Debug)]

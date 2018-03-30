@@ -19,6 +19,8 @@ pub mod utils;
 pub mod individual;
 pub mod operators;
 pub mod algorithms;
+pub mod scalarize;
+
 use individual::*;
 
 pub fn gen_rand_pop<F, S, SS, G>(mut gen: G, size: usize) -> Vec<Individual<S, SS>>
