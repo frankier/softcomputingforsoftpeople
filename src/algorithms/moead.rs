@@ -103,7 +103,7 @@ pub fn moead_next_gen_real<'a, R, G, CX, H, SolD, FitD, Sc, St, WV>(
     )
 }
 
-pub fn moead_next_gen_order<'a, R, G, CX, H, E, N, FitD, Sc, St, WV>(
+pub fn moead_next_gen_order<'a, R, G, CX, H, N, FitD, Sc, St, WV>(
         rng: &mut R,
         crossover: CX,
         apply_heuristic: &H,
