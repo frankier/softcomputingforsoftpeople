@@ -1,16 +1,13 @@
+use std::u32;
 use rand::Rng;
 use na::{VectorN, Vector2, Dim, DimName, DefaultAllocator, U2, distance, DMatrix, abs};
 use na::geometry::Point;
 use na::allocator::Allocator;
 use ordered_float::NotNaN;
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashSet};
 use std::ops::Range;
 use rand::seq::sample_indices;
 
-// XXX: To implement for higher dimensions see
-// "Sampling Uniformly from the Unit Simplex"
-// http://www.cs.cmu.edu/~nasmith/papers/smith+tromble.tr04.pdf
-// and literature on n-dimensional space filling curves
 pub trait WeightVector<'a, D>
     where D: Dim + Copy,
           DefaultAllocator: Allocator<f32, D>
@@ -161,6 +158,49 @@ impl<'a, D> WeightVector<'a, D> for ChosenWeightVector<D>
     fn get_lambda(&self) -> &[VectorN<f32, D>] {
         &self.lambda
     }
+}
+
+// Algorithm (and variable names) from "Sampling Uniformly from the Unit Simplex"
+// http://www.cs.cmu.edu/~nasmith/papers/smith+tromble.tr04.pdf
+// Section 4.2 -- 4.3
+// XXX: Could offer alternative based on n-dimensional space filling curves
+pub fn sample_simplex<R, D>(rng: &mut R, num: usize) -> Vec<VectorN<f32, D>>
+    where R: Rng,
+          D: Dim + DimName + Copy,
+          DefaultAllocator: Allocator<f32, D>
+{
+    const M_PLUS_N: u32 = u32::MAX;
+    let n = D::try_to_usize().unwrap();
+    let m = (M_PLUS_N - n as u32) as f64;
+    let mut samples = Vec::with_capacity(num);
+    let mut x_is = HashSet::with_capacity(n + 1);
+    let mut x_is_sorted = Vec::with_capacity(n + 1);
+
+    for _sample_i in 0..num {
+        x_is.insert(0);
+        x_is.insert(M_PLUS_N);
+
+        for _ in 0..(n - 1) {
+            // Rejection sampling
+            loop {
+                let new_x_i: u32 = rng.gen();
+                if !x_is.contains(&new_x_i) {
+                    x_is.insert(new_x_i);
+                    break;
+                }
+            }
+        }
+        x_is_sorted.clear();
+        x_is_sorted.extend(x_is.drain());
+        x_is_sorted.sort_unstable();
+        let mut new_vec = VectorN::<f32, D>::zeros();
+        for dim_i in 0..(n as usize) {
+            new_vec[dim_i] =
+                (x_is_sorted[dim_i + 1] as f64 - x_is_sorted[dim_i] as f64 / m) as f32;
+        }
+        samples.push(new_vec);
+    }
+    samples
 }
 
 pub trait Scalarizer<D>
