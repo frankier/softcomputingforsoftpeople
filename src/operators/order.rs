@@ -91,7 +91,8 @@ impl<G, N> Crossover<G, N> for PMX
     }
 }
 
-/* Anchor and distribute */
+/* These anchored crossover types including `anchor and distribute' and `anchor and crossover'
+ * assume variable length genes */
 fn rand_anchors<R, N>(
         rng: &mut R, mummy_o: &IndexSet<N>, daddy_o: &IndexSet<N>,
         max_anchors: usize) -> (usize, Vec<N>)
