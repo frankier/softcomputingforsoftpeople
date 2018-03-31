@@ -57,8 +57,10 @@ impl<G, N> Crossover<G, N> for PMX
             }
         }
 
-        let mummy_o = parents[0].get_order();
-        let daddy_o = parents[1].get_order();
+        let mummy = &parents[0];
+        let daddy = &parents[1];
+        let mummy_o = mummy.get_order();
+        let daddy_o = daddy.get_order();
         let shorter_len = min(mummy_o.len(), daddy_o.len());
         let (xover_p1, xover_p2) = gen_two_points(rng, 0, shorter_len + 1);
 
@@ -83,8 +85,8 @@ impl<G, N> Crossover<G, N> for PMX
         pm_copy(&mut daughter_o, xover_p1..mummy_o.len(), mummy_o, &bwd_mapping);
         pm_copy(&mut son_o, xover_p1..daddy_o.len(), daddy_o, &fwd_mapping);
 
-        let daughter = G::from_order(daughter_o);
-        let son = G::from_order(son_o);
+        let daughter = mummy.from_order(daughter_o);
+        let son = daddy.from_order(son_o);
         (daughter, son)
     }
 }
@@ -187,8 +189,10 @@ impl<G, N> Crossover<G, N> for IntersectRandAnchorDist
     }
 
     fn crossover<R: Rng>(&self, rng: &mut R, parents: &[G]) -> (G, G) {
-        let mummy_o = parents[0].get_order();
-        let daddy_o = parents[1].get_order();
+        let mummy = &parents[0];
+        let daddy = &parents[1];
+        let mummy_o = mummy.get_order();
+        let daddy_o = daddy.get_order();
 
         /* Get anchors */
         let (intersection_length, anchors) =
@@ -247,8 +251,8 @@ impl<G, N> Crossover<G, N> for IntersectRandAnchorDist
             }
         }
 
-        let daughter = G::from_order(daughter_o);
-        let son = G::from_order(son_o);
+        let daughter = mummy.from_order(daughter_o);
+        let son = daddy.from_order(son_o);
         (daughter, son)
     }
 }
@@ -268,8 +272,10 @@ impl<G, N> Crossover<G, N> for IntersectRandAnchorCrossover
     }
 
     fn crossover<R: Rng>(&self, rng: &mut R, parents: &[G]) -> (G, G) {
-        let mummy_o = parents[0].get_order();
-        let daddy_o = parents[1].get_order();
+        let mummy = &parents[0];
+        let daddy = &parents[1];
+        let mummy_o = mummy.get_order();
+        let daddy_o = daddy.get_order();
 
         let longest_len = max(mummy_o.len(), daddy_o.len());
 
@@ -297,8 +303,8 @@ impl<G, N> Crossover<G, N> for IntersectRandAnchorCrossover
             swap = !swap;
         }
 
-        let daughter = G::from_order(daughter_o);
-        let son = G::from_order(son_o);
+        let daughter = mummy.from_order(daughter_o);
+        let son = daddy.from_order(son_o);
         (daughter, son)
     }
 }

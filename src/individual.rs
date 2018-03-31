@@ -72,7 +72,10 @@ pub mod order {
     use indexmap::IndexSet;
 
     pub trait OrderGene<N>: ::State + Sized {
-        fn from_order(IndexSet<N>) -> Self;
+        // XXX: Bad: from_order shouldn't need &self, but it does since the Gene might currently be
+        // carrying around extra information to get its fitness. This is just bad design and needs
+        // to be fixed.
+        fn from_order(&self, IndexSet<N>) -> Self;
         fn get_order(&self) -> &IndexSet<N>;
         fn get_mut_order(&mut self) -> &mut IndexSet<N>;
     }
