@@ -92,9 +92,11 @@ pub struct ChosenWeightVector<D>
     where D: Dim + Copy,
           DefaultAllocator: Allocator<f32, D> //<DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
 {
+    // The weights
     lambda: Vec<VectorN<f32, D>>,
+    // The neighborhood size
     t: usize,
-    // This could be a 2D matrix
+    // The neighborhood lookup
     b: DMatrix<usize>,
 }
 
