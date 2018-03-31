@@ -81,12 +81,49 @@ pub mod order {
 pub mod multiobj {
     use na::{VectorN, Dim, DefaultAllocator};
     use na::allocator::Allocator;
+    use ord_subset::OrdVar;
 
     pub trait MultipleFitnessStats<D>
         where D: Dim,
               DefaultAllocator: Allocator<f32, D>,
               <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy {
         fn fitnesses(&self) -> &VectorN<f32, D>;
+    }
+
+    #[derive(Copy, Clone, Debug)]
+    pub struct OnlyFitnessesStats<D>
+        where D: Dim + Copy,
+              DefaultAllocator: Allocator<f32, D>,
+              <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    {
+        pub fitness: VectorN<f32, D>,
+    }
+
+    impl<D> ::Stats for OnlyFitnessesStats<D>
+        where D: Dim,
+              DefaultAllocator: Allocator<f32, D>,
+              <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    {
+        type Fitness = VectorN<f32, D>;
+        type CompetitionFitness = OrdVar<VectorN<f32, D>>;
+
+        fn new(fitness: VectorN<f32, D>) -> OnlyFitnessesStats<D> {
+            OnlyFitnessesStats { fitness }
+        }
+
+        fn fitness(&self) -> OrdVar<VectorN<f32, D>> {
+            OrdVar::<VectorN<f32, D>>::new_unchecked(self.fitness)
+        }
+    }
+
+    impl<D> MultipleFitnessStats<D> for OnlyFitnessesStats<D>
+        where D: Dim,
+              DefaultAllocator: Allocator<f32, D>,
+              <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+    {
+        fn fitnesses(&self) -> &VectorN<f32, D> {
+            &self.fitness
+        }
     }
 }
 

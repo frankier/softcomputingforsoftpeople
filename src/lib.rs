@@ -12,6 +12,7 @@ extern crate num_traits;
 #[macro_use]
 extern crate derive_new;
 extern crate bitwise;
+extern crate ord_subset;
 
 use std::fmt::Debug;
 

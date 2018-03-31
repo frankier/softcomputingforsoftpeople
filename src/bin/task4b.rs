@@ -11,20 +11,18 @@ extern crate structopt_derive;
 extern crate ord_subset;
 
 use structopt::StructOpt;
-use na::{VectorN, Vector2, Vector3, Dim, DefaultAllocator, U2, U3, U1};
-use na::allocator::Allocator;
-use sc::individual::{Stats, Individual, GetFitness, State};
+use na::{VectorN, Vector2, Vector3, U2, U3, U1};
+use sc::individual::{Individual, GetFitness, State};
 use std::f32;
 use itertools::Itertools;
 use rand::Rng;
 use sc::operators::real::{UndxCrossover, LinearCrossover, BlendCrossover};
 use sc::individual::real::RealGene;
-use sc::individual::multiobj::MultipleFitnessStats;
+use sc::individual::multiobj::OnlyFitnessesStats;
 use sc::utils::real::Hypercube;
 use sc::utils::rand::{parse_seed, get_rng};
 use sc::scalarize::{Scalarizer, TchebycheffScalarizer, WeightedSumScalarizer, UniformWeightVector2D, WeightVector};
 use sc::algorithms::moead::{moead_next_gen_real};
-use ord_subset::OrdVar;
 
 #[derive(Copy, Clone, Debug)]
 struct Gene(Vector3<f32>);
@@ -58,43 +56,7 @@ impl GetFitness for Gene {
 
 impl State for Gene {}
 
-#[derive(Copy, Clone, Debug)]
-pub struct FitnessesStats<D>
-    where D: Dim + Copy,
-          DefaultAllocator: Allocator<f32, D>,
-          <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
-{
-    pub fitness: VectorN<f32, D>,
-}
-
-impl<D> Stats for FitnessesStats<D>
-    where D: Dim,
-          DefaultAllocator: Allocator<f32, D>,
-          <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
-{
-    type Fitness = VectorN<f32, D>;
-    type CompetitionFitness = OrdVar<VectorN<f32, D>>;
-
-    fn new(fitness: VectorN<f32, D>) -> FitnessesStats<D> {
-        FitnessesStats { fitness }
-    }
-
-    fn fitness(&self) -> OrdVar<VectorN<f32, D>> {
-        OrdVar::<VectorN<f32, D>>::new_unchecked(self.fitness)
-    }
-}
-
-impl<D> MultipleFitnessStats<D> for FitnessesStats<D>
-    where D: Dim,
-          DefaultAllocator: Allocator<f32, D>,
-          <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
-{
-    fn fitnesses(&self) -> &VectorN<f32, D> {
-        &self.fitness
-    }
-}
-
-type T4bIndividual = Individual<Gene, FitnessesStats<U2>>;
+type T4bIndividual = Individual<Gene, OnlyFitnessesStats<U2>>;
 
 fn print_fitnesses<S: Scalarizer<U2>>(scalarizer: S,
                                       individuals: &[T4bIndividual],
@@ -143,7 +105,7 @@ fn dispatch_xover<R: Rng, S: Scalarizer<U2>, H: Fn(&mut Gene) + Sized>(
         rng: &mut R,
         apply_heuristic: &H,
         scalarizer: &S,
-        individuals: &mut [Individual<Gene, FitnessesStats<U2>>],
+        individuals: &mut [Individual<Gene, OnlyFitnessesStats<U2>>],
         weight_vec: &UniformWeightVector2D,
         z_star: &mut VectorN<f32, U2>)
 {
