@@ -580,14 +580,4 @@ And for linear:
 Project
 =======
 
-Preprocessing
--------------
-
-[FinnPos](https://github.com/mpsilfve/FinnPos) is used for lemmatisation. It is
-a prerequisites iff you want to run the preprocessing stage. If you only want
-to run the optimisation, you can skip this step.
-
-Optimisation
-------------
-
-
+See `proj/README.md'
