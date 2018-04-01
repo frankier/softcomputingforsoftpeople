@@ -112,10 +112,12 @@ fn rand_anchors<R, N>(
         let insert_position = anchors.binary_search_by_key(
             &mummy_idx,
             |other_anchor| mummy_o.index_of(other_anchor).unwrap()).unwrap_err();
-        if let Some(mum_nearest_lt_e) = anchors.get(insert_position - 1) {
-            let dad_nearest_lt_idx = daddy_o.index_of(mum_nearest_lt_e).unwrap();
-            if dad_nearest_lt_idx > daddy_idx {
-                continue;
+        if insert_position > 0 {
+            if let Some(mum_nearest_lt_e) = anchors.get(insert_position - 1) {
+                let dad_nearest_lt_idx = daddy_o.index_of(mum_nearest_lt_e).unwrap();
+                if dad_nearest_lt_idx > daddy_idx {
+                    continue;
+                }
             }
         }
         if let Some(mum_nearest_gt_e) = anchors.get(insert_position) {
@@ -224,7 +226,11 @@ impl<G, N> Crossover<G, N> for IntersectRandAnchorDist
                 dad_divs += mum_gap;
             }
             // Distribute remaining elements before the next anchor element
-            while mum_divs < divisions && dad_divs < divisions {
+            //println!("mummy_o, daddy_o: {} {}", mummy_o.len(), daddy_o.len());
+            //println!("mum_divs, dad_divs, divisions: {} {} {}", mum_divs, dad_divs, divisions);
+            let last_mum_divs = divisions - dad_gap;
+            let last_dad_divs = divisions - mum_gap;
+            while mum_divs < last_mum_divs && dad_divs < last_dad_divs {
                 if mum_divs < dad_divs {
                     let elem = mummy_o.get_index(mum_idx).unwrap();
                     daughter_o.insert(elem.clone());
@@ -249,6 +255,21 @@ impl<G, N> Crossover<G, N> for IntersectRandAnchorDist
                     mum_idx += 1;
                     dad_idx += 1;
                 }
+                //println!("mum_divs, dad_divs, divisions: {} {} {}", mum_divs, dad_divs, divisions);
+            }
+            while mum_divs < last_mum_divs {
+                let elem = mummy_o.get_index(mum_idx).unwrap();
+                daughter_o.insert(elem.clone());
+                son_o.insert(elem.clone());
+                mum_divs += dad_gap;
+                mum_idx += 1;
+            }
+            while dad_divs < last_dad_divs {
+                let elem = daddy_o.get_index(dad_idx).unwrap();
+                daughter_o.insert(elem.clone());
+                son_o.insert(elem.clone());
+                dad_divs += mum_gap;
+                dad_idx += 1;
             }
         }
 
