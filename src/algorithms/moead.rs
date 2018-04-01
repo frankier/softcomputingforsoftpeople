@@ -1,6 +1,7 @@
 use rand::Rng;
 use na::{VectorN, Dim, DefaultAllocator};
 use na::allocator::Allocator;
+use std::collections::BTreeSet;
 
 use individual::{Stats, Individual, State};
 use individual::real::RealGene;
@@ -203,4 +204,28 @@ pub fn moead_next_gen_order<'a, R, G, CX, H, N, FitD, Sc, St, WV>(
         weight_vec,
         z_star
     )
+}
+
+pub fn non_dominated_front<St, D>(points: &[St]) -> BTreeSet<usize>
+    where St: MultipleFitnessStats<D>,
+          D: Dim,
+          DefaultAllocator: Allocator<f32, D>,
+          <DefaultAllocator as Allocator<f32, D>>::Buffer: Copy
+{
+    let mut dom_counts = Vec::<u32>::with_capacity(points.len());
+    let mut front = BTreeSet::<usize>::new();
+    for (p_i, p) in points.iter().enumerate() {
+        dom_counts.push(0);
+        for (q_i, q) in points.iter().enumerate() {
+            let p_fit = &p.fitnesses();
+            let q_fit = &q.fitnesses();
+            if q_fit < p_fit || (q_fit == p_fit && q_i < p_i) {
+                dom_counts[p_i] += 1;
+            }
+        }
+        if dom_counts[p_i] == 0 {
+            front.insert(p_i);
+        }
+    }
+    front
 }

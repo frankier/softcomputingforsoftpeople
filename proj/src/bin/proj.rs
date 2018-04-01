@@ -26,8 +26,7 @@ use std::str::FromStr;
 use sc::utils::rand::{parse_seed, get_rng};
 use sc::utils::indexmap::{sample as sample_indexset};
 use sc::scalarize::{Scalarizer, TchebycheffScalarizer};
-use sc::algorithms::nsga2::non_dominated_sort;
-use sc::algorithms::moead::multi_moead_next_gen;
+use sc::algorithms::moead::{multi_moead_next_gen, non_dominated_front};
 use sc::individual::Individual;
 use sc::individual::multiobj::MultipleFitnessStats;
 use sc::operators::order::{
@@ -300,8 +299,8 @@ fn main() {
     }).collect();
     
     let ind_stats = population.iter().map(|ind| ind.stats).collect_vec();
-    let (_, ranks) = non_dominated_sort(ind_stats.as_slice());
-    let mut solutions = ranks[0].iter().map(|&idx| {
+    let front = non_dominated_front(ind_stats.as_slice());
+    let mut solutions = front.iter().map(|&idx| {
         (population[idx].clone(), weight_vec.get_lambda()[idx])
     }).collect_vec();
 
@@ -319,8 +318,8 @@ fn main() {
             &mut z_star);
 
         let ind_stats = solutions.iter().map(|(ind, _)| ind.stats).chain(population.iter().map(|ind| ind.stats)).collect_vec();
-        let (_, ranks) = non_dominated_sort(ind_stats.as_slice());
-        let new_solutions = ranks[0].iter().map(|idx| {
+        let front = non_dominated_front(ind_stats.as_slice());
+        let new_solutions = front.iter().map(|idx| {
             if *idx < solutions.len() {
                 solutions[*idx].clone()
             } else {
