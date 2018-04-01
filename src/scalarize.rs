@@ -104,9 +104,10 @@ impl<D> ChosenWeightVector<D>
     pub fn new(lambda: Vec<VectorN<f32, D>>, t: usize) -> ChosenWeightVector<D> {
         assert!(t >= 1);
         assert!(t <= lambda.len());
+        assert!(lambda.len() >= 1);
 
         // Matrix is column major, so neighbors should be
-        let mut b = DMatrix::<usize>::from_element(t, lambda.len(), 0);
+        let mut b = DMatrix::<usize>::from_element(lambda.len(), t, 0);
         let mut heap = BinaryHeap::with_capacity(t);
         for (i, l1) in lambda.iter().enumerate() {
             for (j, l2) in lambda.iter().enumerate() {
@@ -120,6 +121,7 @@ impl<D> ChosenWeightVector<D>
                 }
             }
             for (n_i, (_d, j)) in heap.drain().enumerate() {
+                //println!("b[({:?}, {:?})] = {:?}", i, n_i, j);
                 b[(i, n_i)] = j;
             }
         }
@@ -196,7 +198,7 @@ pub fn sample_simplex<R, D>(rng: &mut R, num: usize) -> Vec<VectorN<f32, D>>
         let mut new_vec = VectorN::<f32, D>::zeros();
         for dim_i in 0..(n as usize) {
             new_vec[dim_i] =
-                (x_is_sorted[dim_i + 1] as f64 - x_is_sorted[dim_i] as f64 / m) as f32;
+                ((x_is_sorted[dim_i + 1] - x_is_sorted[dim_i]) as f64 / m) as f32;
         }
         samples.push(new_vec);
     }
@@ -223,6 +225,7 @@ impl<D> Scalarizer<D> for TchebycheffScalarizer<D>
           DefaultAllocator: Allocator<f32, D>
 {
     fn scalarize(&self, fitness: &VectorN<f32, D>, lambda: &VectorN<f32, D>) -> f32 {
+        //println!("scalarize {:?} {:?}", fitness, lambda);
         fitness
             .iter()
             .zip(lambda.iter())
