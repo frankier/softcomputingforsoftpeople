@@ -137,7 +137,7 @@ pub fn moead_next_gen<'a, R, X, G, H, FitD, Sc, St, WV>(
 
 pub fn moead_next_gen_real<'a, R, G, CX, H, SolD, FitD, Sc, St, WV>(
         rng: &mut R,
-        crossover: CX,
+        crossover: &CX,
         apply_heuristic: &H,
         scalarizer: &Sc,
         individuals: &mut [Individual<G, St>],
@@ -173,7 +173,7 @@ pub fn moead_next_gen_real<'a, R, G, CX, H, SolD, FitD, Sc, St, WV>(
 
 pub fn moead_next_gen_order<'a, R, G, CX, H, N, FitD, Sc, St, WV>(
         rng: &mut R,
-        crossover: CX,
+        crossover: &CX,
         apply_heuristic: &H,
         scalarizer: &Sc,
         individuals: &mut [Individual<G, St>],
