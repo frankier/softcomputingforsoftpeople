@@ -252,3 +252,23 @@ impl<D> Scalarizer<D> for WeightedSumScalarizer
             .sum()
     }
 }
+
+#[derive(new)]
+pub struct RescalingScalarizer<D, S>
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>,
+          S: Scalarizer<D>
+{
+    scale: VectorN<f32, D>,
+    inner: S,
+}
+
+impl<D, S> Scalarizer<D> for RescalingScalarizer<D, S>
+    where D: Dim + Copy,
+          DefaultAllocator: Allocator<f32, D>,
+          S: Scalarizer<D>
+{
+    fn scalarize(&self, fitness: &VectorN<f32, D>, lambda: &VectorN<f32, D>) -> f32 {
+        self.inner.scalarize(&fitness.component_div(&self.scale), lambda)
+    }
+}
