@@ -43,59 +43,56 @@ fn main() {
     println!("Loaded");
 
     let buffer = File::open(&opt.solutions).unwrap();
-    let (solutions, weight_vec): (Vec<SentenceOrder>, Vector4<f32>) = deserialize_from(buffer).unwrap();
+    let solutions: (Vec<(SentenceOrder, Vector4<f32>)>) = deserialize_from(buffer).unwrap();
 
-    let mut sentences = BTreeMap::new();
-    let mut all_sentences = SentenceOrder::new();
-    for solution in solutions.iter() {
-        all_sentences.extend(solution.iter());
-    }
-    let mut cur_sent = None;
+    for (i, (solution, l_i)) in solutions.into_iter().enumerate() {
+        let individual = ProjIndividual::new(Gene::new(&corpus_dump, solution));
+        println!("Solution #{} {} {}", i + 1, l_i, individual.stats.fitnesses());
 
-    for (movie_id, subtitle_path) in walk(opt.input_dir) {
-        let mut ss = OpusStream::from_path(&subtitle_path).unwrap();
-        loop {
-            match ss.next() {
-                Ok(FlatStreamBit::StreamBit(bit)) => match bit {
-                    StreamBit::SentDelim(SentDelim { id, delim_type: DelimType::Start }) => {
-                        let sent_id = SentenceId {
-                            movie_id: movie_id as u32,
-                            sentence_num: id as u32,
-                        };
-                        if all_sentences.contains(&sent_id) {
-                            cur_sent = Some((sent_id, vec![]))
+        let mut sentences = BTreeMap::new();
+        let mut cur_sent = None;
+
+        for (movie_id, subtitle_path) in walk(&opt.input_dir) {
+            let mut ss = OpusStream::from_path(&subtitle_path).unwrap();
+            loop {
+                match ss.next() {
+                    Ok(FlatStreamBit::StreamBit(bit)) => match bit {
+                        StreamBit::SentDelim(SentDelim { id, delim_type: DelimType::Start }) => {
+                            let sent_id = SentenceId {
+                                movie_id: movie_id as u32,
+                                sentence_num: id as u32,
+                            };
+                            if individual.state.solution.contains(&sent_id) {
+                                cur_sent = Some((sent_id, vec![]))
+                            }
                         }
-                    }
-                    StreamBit::SentDelim(SentDelim { id: _, delim_type: DelimType::End }) => {
-                        if let Some((sent_id, sent)) = cur_sent {
-                            sentences.insert(sent_id, sent);
+                        StreamBit::SentDelim(SentDelim { id: _, delim_type: DelimType::End }) => {
+                            if let Some((sent_id, sent)) = cur_sent {
+                                sentences.insert(sent_id, sent);
+                            }
+                            cur_sent = None;
                         }
-                        cur_sent = None;
-                    }
-                    StreamBit::Word(Word { id: _, word }) => {
-                        if let Some((_, ref mut sent)) = cur_sent {
-                            sent.push(word);
+                        StreamBit::Word(Word { id: _, word }) => {
+                            if let Some((_, ref mut sent)) = cur_sent {
+                                sent.push(word);
+                            }
                         }
+                        _ => {}
+                    },
+                    Ok(FlatStreamBit::Meta(_meta)) => {
+                        continue;
                     }
-                    _ => {}
-                },
-                Ok(FlatStreamBit::Meta(_meta)) => {
-                    continue;
-                }
-                Ok(FlatStreamBit::EndStream) => {
-                    break;
-                }
-                Err(e) => {
-                    println!("\nSkipping {}: {}", subtitle_path.to_string_lossy(), e.description());
-                    break;
+                    Ok(FlatStreamBit::EndStream) => {
+                        break;
+                    }
+                    Err(e) => {
+                        println!("\nSkipping {}: {}", subtitle_path.to_string_lossy(), e.description());
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    for (i, (solution, l_i)) in solutions.into_iter().zip(weight_vec.iter()).enumerate() {
-        let individual = ProjIndividual::new(Gene::new(&corpus_dump, solution));
-        println!("Solution #{} {} {}", i + 1, l_i, individual.stats.fitnesses());
         for (j, sentence) in individual.state.solution.iter().enumerate() {
             println!("{}: {}", j + 1, sentences[sentence].join(" "));
         }
