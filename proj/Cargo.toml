@@ -1,0 +1,25 @@
+[package]
+name = "softcomputingforsoftpeople-proj"
+version = "0.0.1"
+authors = [ "Frankie Robertson <frankie@robertson.name>" ]
+#build = "build.rs"
+
+[dependencies]
+rand = "0.4.2"
+rand_derive = "0.3.1"
+structopt = { git = "https://github.com/TeXitoi/structopt.git", rev = "e046a86f3977b0d0bf796c7f9f1adbe43742d091" }
+structopt-derive = { git = "https://github.com/TeXitoi/structopt.git", rev = "e046a86f3977b0d0bf796c7f9f1adbe43742d091" }
+nalgebra = { version = "0.14.0", features = ["serde-serialize"] }
+lazy_static = "1.0.0"
+itertools = "0.7.6"
+alga = "0.5.2"
+opus-parse = "0.0.3"
+pbr = "1.0.0"
+indexmap = { version = "1.0.1", features = ["serde-1"] }
+serde = "1.0"
+serde_derive = "1.0"
+bincode = "1.0.0"
+derive-new = "0.5.0"
+softcomputingforsoftpeople = { path = ".." }
+rustfmt-nightly = "0.4.1"
+rustfmt = "0.10.0"
