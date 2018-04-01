@@ -1,6 +1,8 @@
 use indexmap::IndexSet;
 use std::hash::Hash;
 use std::ops::Range;
+use rand::seq::sample_indices;
+use rand::Rng;
 
 
 pub trait IndexSetExt<T>
@@ -26,4 +28,13 @@ pub fn index_set_slice<'a, T>(haystack: &'a IndexSet<T>, range: Range<usize>)
     range.filter_map(move |idx| {
         haystack.get_index(idx)
     })
+}
+
+pub fn sample<'a, R, T>(rng: &mut R, haystack: &'a IndexSet<T>, num: usize)
+        -> impl Iterator<Item=&'a T> + 'a
+    where R: Rng
+{
+    sample_indices(rng, haystack.len(), num)
+        .into_iter()
+        .filter_map(move |rand_idx| haystack.get_index(rand_idx))
 }
