@@ -28,11 +28,11 @@ pub trait WeightVector<'a, D>
 
 pub struct UniformWeightVector2D {
     lambda: Vec<Vector2<f32>>,
-    t: u32,
+    t: usize,
 }
 
 impl UniformWeightVector2D {
-    pub fn new(num: u32, t: u32) -> UniformWeightVector2D {
+    pub fn new(num: usize, t: usize) -> UniformWeightVector2D {
         assert!(t <= num);
         let n = num as f32;
         let n1 = n - 1.0;
